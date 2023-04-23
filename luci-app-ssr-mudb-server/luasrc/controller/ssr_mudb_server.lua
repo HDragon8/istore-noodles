@@ -7,7 +7,9 @@ function index()
     if not nixio.fs.access("/etc/config/ssr_mudb_server") then return end
     entry({"admin", "vpn"}, firstchild(), "VPN", 45).dependent = false
     if nixio.fs.access("/usr/share/ssr_mudb_server") then
-        entry({"admin", "vpn", "ssr_mudb_server"}, cbi("ssr_mudb_server/index"), _("SSR MuDB Server"), 2).dependent = true
+        local page = entry({"admin", "vpn", "ssr_mudb_server"}, cbi("ssr_mudb_server/index"), _("SSR MuDB Server"), 2)
+        page.dependent = true
+        page.acl_depends = { "luci-app-ssr-mudb-server" }
     end
 
     entry({"admin", "vpn", "ssr_mudb_server", "user"}, template("ssr_mudb_server/user")).leaf = true
@@ -39,7 +41,7 @@ end
 
 function status()
     local e = {}
-    e.status = luci.sys.call("busybox ps -w | grep -v grep | grep '/usr/share/ssr_mudb_server/server.py' >/dev/null") == 0
+    e.status = luci.sys.call("ps -w | grep -v grep | grep '/usr/share/ssr_mudb_server/server.py' >/dev/null") == 0
     http_write_json(e)
 end
 
