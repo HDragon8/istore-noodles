@@ -168,15 +168,16 @@ libs/jpcre2 libs/wxbase libs/rapidjson libs/libcron libs/quickjspp libs/toml11 \
 utils/cpulimit utils/filebrowser utils/cups net/udp2raw net/msd_lite net/xfrpc net/bitsrunlogin-go \
 utils/phicomm-k3screenctrl net/apinger net/basicstation libs/sx1302_hal
 
-git_sparse_clone master "https://github.com/immortalwrt/immortalwrt" "immortal" package/kernel/rtl88x2bu \
-package/kernel/r8168 package/kernel/rtl8821cu package/kernel/rtl8189es package/emortal/autocore package/emortal/automount \
-package/network/utils/fullconenat package/network/utils/fullconenat-nft \
-package/network/utils/nftables package/utils/mhz package/libs/libnftnl \
-package/network/config/firewall package/network/config/firewall4
+git_sparse_clone master "https://github.com/immortalwrt/immortalwrt" "immortal" package/kernel/rtl88x2bu package/utils/mhz \
+package/kernel/r8168 package/kernel/rtl8821cu package/kernel/rtl8189es package/emortal/autocore package/emortal/automount
+#package/network/utils/fullconenat package/network/utils/fullconenat-nft
+#package/network/utils/nftables package/utils/mhz package/libs/libnftnl
+#package/network/config/firewall package/network/config/firewall4
+
+git_sparse_clone master "https://github.com/coolsnowwolf/luci" "leluci" applications libs/luci-lib-fs
+mv -f applications luciapp
 
 git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci" applications protocols/luci-proto-minieap
-mv -f applications luciapp
-git_sparse_clone master "https://github.com/coolsnowwolf/luci" "leluci" applications libs/luci-lib-fs
 mv -n applications/* luciapp/; rm -rf applications
 
 git_sparse_clone master "https://github.com/coolsnowwolf/lede" "leanlede" package/lean package/network/services/shellsync package/network/services/e2guardian
@@ -192,6 +193,7 @@ rm -rf ./*/.git & rm -f ./*/.gitattributes
 rm -rf ./*/.svn & rm -rf ./*/.github & rm -rf ./*/.gitignore
 #删除没有依赖的包
 rm -rf luci-app-noddos
+rm -rf pcat-manager
 #移动luci-base、luci-mod-status、luci-mod-system到A-model文件夹
 #mkdir A-model
 #mv -f luci-base A-model/luci-base
