@@ -19,7 +19,7 @@ rm -rf $1
 git clone --depth 1 https://github.com/HDragon8/noodles-default-settings noodles-default-settings
 git clone --depth 1 https://github.com/kiddin9/luci-theme-edge
 git clone --depth 1 https://github.com/kiddin9/openwrt-amule-dlp && mvdir openwrt-amule-dlp
-git clone --depth 1 https://github.com/yichya/luci-app-xray
+#git clone --depth 1 https://github.com/yichya/luci-app-xray
 git clone --depth 1 https://github.com/xiaorouji/openwrt-passwall && mvdir openwrt-passwall
 git clone --depth 1 https://github.com/fw876/helloworld && mvdir helloworld
 git clone --depth 1 -b luci https://github.com/xiaorouji/openwrt-passwall passwall1 && mv -n passwall1/luci-app-passwall  ./; rm -rf passwall1
@@ -194,6 +194,15 @@ rm -rf ./*/.svn & rm -rf ./*/.github & rm -rf ./*/.gitignore
 #删除没有依赖的包
 rm -rf luci-app-noddos
 rm -rf pcat-manager
+rm -rf ddns-scripts_dnspod
+rm -rf ddns-scripts_dnspod
+rm -rf luci-app-eqos
+rm -rf ntfs3-mount
+rm -rf ntfs3-oot
+rm -rf r8125
+rm -rf r8168
+rm -rf rtl88x2bu
+rm -rf shellsync
 #移动luci-base、luci-mod-status、luci-mod-system到A-model文件夹
 #mkdir A-model
 #mv -f luci-base A-model/luci-base
