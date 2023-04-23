@@ -1,15 +1,11 @@
 {
 	"luci-app-openvpn": {
-		"description": "Grant access to OpenVPN configuration",
+		"description": "Grant UCI access for luci-app-openvpn",
 		"read": {
-			"uci": [ "openvpn", "openvpn_recipes" ]
+			"uci": [ "openvpn_recipes" ]
 		},
 		"write": {
-			"cgi-io": [ "upload" ],
-			"file": {
-				"/etc/openvpn/*": [ "write" ]
-			},
-			"uci": [ "openvpn" ]
+			"uci": [ "openvpn_recipes" ]
 		}
 	}
 }

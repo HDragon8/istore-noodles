@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=Unbound Recursive DNS Resolver Configuration
-LUCI_DEPENDS:=+luci-compat +unbound-daemon
+LUCI_DEPENDS:=+unbound-daemon
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

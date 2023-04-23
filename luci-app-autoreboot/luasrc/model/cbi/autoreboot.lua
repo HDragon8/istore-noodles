@@ -1,13 +1,14 @@
 require("luci.sys")
 
-m = Map("autoreboot", translate("Scheduled Reboot"))
+m = Map("autoreboot")
+m.title = translate("Scheduled Reboot")
 m.description = translate("Scheduled reboot Setting")
 
 s = m:section(TypedSection, "login")
 s.addremove = false
 s.anonymous = true
 
-enable = s:option(Flag,"enable",translate("Enable"))
+enable = s:option(Flag, "enable", translate("Enable"))
 enable.rmempty = false
 enable.default = 0
 
@@ -33,7 +34,7 @@ pass.rmempty = false
 
 local e = luci.http.formvalue("cbi.apply")
 if e then
-  io.popen("/etc/init.d/autoreboot restart")
+	io.popen("/etc/init.d/autoreboot restart")
 end
 
 return m

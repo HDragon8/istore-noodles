@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI Support for VnStat
-LUCI_DEPENDS:=+luci-compat +vnstat +vnstati
+LUCI_DEPENDS:=+vnstat +vnstati
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

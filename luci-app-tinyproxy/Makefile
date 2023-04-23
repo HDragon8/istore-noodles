@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=Tinyproxy - HTTP(S)-Proxy configuration
-LUCI_DEPENDS:=+luci-compat +tinyproxy
+LUCI_DEPENDS:=+tinyproxy
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

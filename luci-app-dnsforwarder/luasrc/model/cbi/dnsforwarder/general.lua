@@ -1,5 +1,6 @@
 --Alex<1886090@gmail.com>
 --Dennis<code@tossp.com>
+
 local fs = require "nixio.fs"
 local CONFIG_FILE = "/tmp/dnsforwarder.conf";
 

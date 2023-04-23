@@ -9,8 +9,10 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=Luci for Music Remote Center
 LUCI_DEPENDS:=+alsa-utils +owntone
 LUCI_PKGARCH:=all
+
+PKG_NAME:=luci-app-music-remote-center
 PKG_VERSION:=1
-PKG_RELEASE:=7
+PKG_RELEASE:=6
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

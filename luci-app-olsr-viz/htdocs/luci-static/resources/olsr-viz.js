@@ -103,15 +103,15 @@ function edge(n1,n2){
 			return "";
 		}
 
-		var x = this.n1.x*scale;
-		var y = this.n1.y*scale;
-		var dx = this.n2.x*scale - x;
-		var dy = this.n2.y*scale - y;
+		x = this.n1.x*scale;
+		y = this.n1.y*scale;
+		dx = this.n2.x*scale - x;
+		dy = this.n2.y*scale - y;
 
 		x += xoff*scale + 75;
 		y += yoff*scale + 15;
 
-		var imgtag = "<img src='/luci-static/resources/olsr-viz/dot_"
+		imgtag = "<img src='/luci-static/resources/olsr-viz/dot_"
 		if (this.etx > 0 && this.etx < 2) {
 			imgtag += "good.gif'";
 		}
@@ -126,9 +126,9 @@ function edge(n1,n2){
 		}
 		imgtag += " alt='ETX: " + this.etx + "' title='ETX: " + this.etx + "' ";
 
-		var d = Math.sqrt(dx*dx+dy*dy);
+		d = Math.sqrt(dx*dx+dy*dy);
 
-		for (var j = 0; j < d; j += 15) {
+		for (j = 0; j < d; j += 15) {
 			nh += imgtag + "style='top:"
 			+ parseInt(y+dy * j / d) + "px; left:"
 			+ parseInt(x+dx * j / d) + "px; "
@@ -182,7 +182,7 @@ function edge(n1,n2){
 
 function getEdgeKey(ip1,ip2)
 {
-	var key = "";
+	key = "";
 	if(ip1 > ip2) {
 		key = ip2 + "-" + ip1;
 	}
@@ -215,7 +215,7 @@ function node(ip) {
 			return "";
 		}
 		var igw = 0;
-		for(var h in this.hna) {
+		for(h in this.hna) {
 			if(h == "0.0.0.0") {
 				igw = 1;
 				break;
@@ -228,11 +228,11 @@ function node(ip) {
 			+ "width: 150px; height: 1px; z-index: 4; "
 			+ "position: absolute; background-color: transparent;' >"
 			+ "<div><img src='/luci-static/resources/olsr-viz/node"+(igw ? "-hna" : "")+iconvariant + ".gif'"
-			+ " alt='node " + this.ip + "' style='border: none;'><br />"
+			+ " alt='node " + this.ip + "' style='border: none;'><br>"
 			+ 	"<a href='http://" + this.ip + "/'>"
 			+ 	"<span class='label ip'>" + this.ip + "</span></a>"
 			+ 	(showdesc && this.desc != "" ? 
-						"<br /><span class='label desc'>" + this.desc + "</span>" : "")
+						"<br><span class='label desc'>" + this.desc + "</span>" : "")
 			+ "</div></div>";
 		return nh;
 	}
@@ -285,7 +285,7 @@ function node(ip) {
 }
 
 function touch_node(ip) {
-	var n = nodes[ip];
+	n = nodes[ip];
 	if(!n) {
 		n = new node(ip);
 		nodes[ip] = n;
@@ -298,22 +298,19 @@ function touch_node(ip) {
 
 function place_new_nodes() {
 	var nc = 0;
-	for(var i = 0;i<newnodes.length;i++){
-		var n = newnodes[i];
+	for(i = 0;i<newnodes.length;i++){
+		n = newnodes[i];
 		if(n.placed){continue;}
-		var sp;
 		if(sp = getCookie("node_"+n.ip)) {
-			var xy = sp.split("x");
+			xy = sp.split("x");
 			debug_writeln("sp: "+sp+" xy[0]: "+xy[0]+" xy[1]: "+xy[1]);
 			n.x = parseFloat(xy[0]);
 			n.y = parseFloat(xy[1]);
 		}
 		else if(n.weight>1){
-			// see if we find already placed nodes
-			var ox=0, oy=0;
-			var dx=0, dy=0;
-			var c=0;
-			for(var e in n.edges){
+			// see if we find allredy placed nodes
+			ox=0,oy=0;dx=0,dy=0;c=0;
+			for(e in n.edges){
 				if(nodes[e] && nodes[e].placed){
 					if(!ox && !oy) {
 						ox = nodes[e].x;
@@ -332,7 +329,7 @@ function place_new_nodes() {
 			}
 		}
 		else {
-			// begin somewhere
+			// beginn somewhere
 			n.x = Math.random()*400;
 			n.y = Math.random()*400;
 		}
@@ -352,7 +349,7 @@ function hna(gw,net,mask) {
 }
 
 function touch_hna(node,net,mask) {
-	var h = node.hna[net];
+	h = node.hna[net];
 	if(!h) {
 		h = new hna(node.ip,net,mask);
 		node.hna[net] = h;
@@ -382,20 +379,17 @@ function viz_setup(iframeid,maindivid,nodedivid,edgedivid) {
 	edgediv=document.getElementById(edgedivid);
 
 	// autosave on exit?
-	var autosave;
 	if((autosave = getCookie("prefs_autosave"))) {
 		auto_save = parseInt(autosave);
 	}
 	viz_autosave(auto_save);
 
 	// maximum metric of surrounding nodes
-	var mmx;
 	if(mmx = getCookie("prefs_maxmetric")) {
 		set_maxmetric(mmx,true,true);
 	}
 
 	// scale of view
-	var savescale;
 	if((savescale = getCookie("prefs_scale")) &&
 		 (savescale = parseFloat(savescale))) {
 			set_scale(savescale,true);
@@ -420,10 +414,10 @@ function viz_setup(iframeid,maindivid,nodedivid,edgedivid) {
 function viz_save()
 {
 	// let cookie survive a month
-	var exp = new Date();
+	exp = new Date();
 	exp.setTime(exp.getTime() + 2592000000);
 	// save node positions
-	for(var ip in nodes)
+	for(ip in nodes)
 	{
 		if(nodes[ip].metric > maxmetric) {
 			continue;
@@ -457,10 +451,10 @@ function viz_autosave(autosave)
 function viz_reset()
 {
 	deleteAllCookies();
-	for(var ip in nodes) {
+	for(ip in nodes) {
 		delete nodes[ip];
 	}
-	for(var e in edges) {
+	for(e in edges) {
 		delete edges[e];
 	}
 	viz_update();
@@ -577,10 +571,6 @@ function fa(x) {
 var dclTimer = 0;
 var declump_running = false;
 function declump(t) {
-	var dx;
-	var dy;
-	var d;
-
 	// clear declump timer
 	if(dclTimer) {
 		clearTimeout(dclTimer);
@@ -591,7 +581,7 @@ function declump(t) {
 	declump_running = true;
 
 	// nodes
-	var nc = 0;
+	nc = 0;
 	for (var ip1 in nodes) {
 		nodes[ip1].fr_x=0;
 		nodes[ip1].fr_y=0;
@@ -605,7 +595,7 @@ function declump(t) {
 		if(nodes[ip1].metric > maxmetric || nodes[ip1].pinned) {
 			continue;
 		}
-		for (var ip2 in nodes) {
+		for (ip2 in nodes) {
 			if (nodes[ip2].metric > maxmetric || ip1 == ip2) {
 				continue;
 			}
@@ -621,14 +611,14 @@ function declump(t) {
 		dx = nodes[ip1].fr_x;
 		dy = nodes[ip1].fr_y;
 		d = Math.sqrt(dx*dx+dy*dy);
-		var md = Math.min(d,iel/nodes[ip1].weight);
+		md = Math.min(d,iel/nodes[ip1].weight);
 		nodes[ip1].x_next += (dx / d) * md;
 		nodes[ip1].y_next += (dy / d) * md;
 		nc++;
 	}
 
 	// edges
-	var ec = 0;
+	ec = 0;
 	for (var e in edges) {
 		if (!edges[e].n1 || !edges[e].n2 ||
 			edges[e].n1.metric > maxmetric || edges[e].n2.metric > maxmetric) {
@@ -647,11 +637,7 @@ function declump(t) {
 	}
 
 	// displacement
-	var xmin=-20;
-	var ymin=-20;
-	var xmax=20;
-	var ymax=20;
-	var dsum=0;
+	xmin=-20;ymin=-20;xmax=20;ymax=20;dsum=0;
 	for (var ip in nodes) {
 		if(nodes[ip].metric > maxmetric || nodes[ip].pinned) {
 			continue;
@@ -690,10 +676,10 @@ function declump(t) {
 	xoff=-xmin;
 	yoff=-ymin;
 	/*
-	document.getElementById('debug').innerHTML = "<br />" +
-		"offset: " + xoff + "x" + yoff + " dsum: " + dsum + "<br />" +
-		"nc: " + nc + " ec: " + ec + "xmax: " + xmax + " xmin: " + xmin +	"<br />" +
-		"optsize: " + optsize + "<br />";
+	document.getElementById('debug').innerHTML = "<br>" +
+		"offset: " + xoff + "x" + yoff + " dsum: " + dsum + "<br>" +
+		"nc: " + nc + " ec: " + ec + "xmax: " + xmax + " xmin: " + xmin +	"<br>" +
+		"optsize: " + optsize + "<br>";
 		*/
 	refresh();
 	if(auto_declump) {
@@ -727,7 +713,7 @@ function dragstart(element) {
 	dragx = posx - element.offsetLeft;
 	dragy = posy - element.offsetTop;
 
-	var n = nodes[dragip];
+	n = nodes[dragip];
 	if(n) {
 		n.pinned = true;
 	}
@@ -737,7 +723,7 @@ function dragstart(element) {
 function dragstop() {
 	//Wird aufgerufen, wenn ein Objekt nicht mehr bewegt werden soll.
 
-	var n = nodes[dragip];
+	n = nodes[dragip];
 	if(n) {
 		n.pinned = false;
 	}
@@ -752,12 +738,12 @@ function drag(ereignis) {
 	posx = document.all ? window.event.clientX : ereignis.pageX;
 	posy = document.all ? window.event.clientY : ereignis.pageY;
 	if(dragip != null) {
-		var n = nodes[dragip];
+		n = nodes[dragip];
 		if(n) {
 			n.x = (posx - dragx)/scale - xoff;
 			n.y = (posy - dragy)/scale - yoff;
 		}
-		var e = document.getElementById('node_'+dragip);
+		e = document.getElementById('node_'+dragip);
 		e.style.left = parseInt((n.x+xoff)*scale) + "px";
 		e.style.top = parseInt((n.y+yoff)*scale) + "px";
 	}
@@ -765,7 +751,7 @@ function drag(ereignis) {
 
 function debug_writeln(line)
 {
-	document.getElementById('debug').innerHTML = line + "<br />" + document.getElementById('debug').innerHTML;
+	document.getElementById('debug').innerHTML = line + "<br>" + document.getElementById('debug').innerHTML;
 }
 
 /**
@@ -825,8 +811,8 @@ function deleteCookie(name, path, domain) {
 }
 
 function deleteAllCookies() {
-	var cookies = document.cookie.split("; ");
-	for(var i=0;i<cookies.length;i++) {
+	cookies = document.cookie.split("; ");
+	for(i=0;i<cookies.length;i++) {
 		deleteCookie(cookies[i].split("=")[0]);
 	}
 }

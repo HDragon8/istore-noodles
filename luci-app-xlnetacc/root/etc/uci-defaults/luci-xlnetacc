@@ -7,16 +7,5 @@ uci -q batch <<-EOF >/dev/null
 	commit ucitrack
 EOF
 
-general=$(uci -q get xlnetacc.@general[-1])
-if [ -z "$general" ]; then
-	uci -q add xlnetacc general
-fi
-if [ "$general"x != "general"x ]; then
-	uci -q batch <<-EOF >/dev/null
-		rename xlnetacc.@general[-1]="general"
-		commit xlnetacc
-	EOF
-fi
-
-rm -rf /tmp/luci-indexcache /tmp/luci-modulecache
+rm -f /tmp/luci-indexcache
 exit 0

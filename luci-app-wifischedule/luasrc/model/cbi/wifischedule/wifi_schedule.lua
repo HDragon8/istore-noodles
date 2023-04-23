@@ -37,9 +37,7 @@ end
 
 -- BEGIN Map
 m = Map("wifi_schedule", translate("Wifi Schedule"), translate("Defines a schedule when to turn on and off wifi."))
-m.apply_on_parse = true
-
-function m.on_apply(self)
+function m.on_commit(self)
     sys.exec("/usr/bin/wifi_schedule.sh cron")
 end
 -- END Map
@@ -241,7 +239,7 @@ function force_wifi.validate(self, value, d)
         if fs.access("/usr/bin/iwinfo") then
             return value
         else
-            return nil, translate("Could not find required program /usr/bin/iwinfo")
+            return nil, translate("Could not find required programm /usr/bin/iwinfo")
         end
     else
         return "1"

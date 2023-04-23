@@ -10,25 +10,24 @@ function index()
 
 	local page
 
-	page = entry({"admin", "vpn", "ocserv"}, alias("admin", "vpn", "ocserv", "main"),
+	page = entry({"admin", "services", "ocserv"}, alias("admin", "services", "ocserv", "main"),
 		_("OpenConnect VPN"))
 	page.dependent = true
-	page.acl_depends = { "luci-app-ocserv" }
 	
-	page = entry({"admin", "vpn", "ocserv", "main"},
+	page = entry({"admin", "services", "ocserv", "main"},
 		cbi("ocserv/main"),
 		_("Server Settings"), 200)
 	page.dependent = true
 
-	page = entry({"admin", "vpn", "ocserv", "users"},
+	page = entry({"admin", "services", "ocserv", "users"},
 		cbi("ocserv/users"),
 		_("User Settings"), 300)
 	page.dependent = true
 
-	entry({"admin", "vpn", "ocserv", "status"},
+	entry({"admin", "services", "ocserv", "status"},
 		call("ocserv_status")).leaf = true
 
-	entry({"admin", "vpn", "ocserv", "disconnect"},
+	entry({"admin", "services", "ocserv", "disconnect"},
 		post("ocserv_disconnect")).leaf = true
 
 end

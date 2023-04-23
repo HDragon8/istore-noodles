@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI Support for OpenConnect VPN
-LUCI_DEPENDS:=+luci-compat +ocserv +certtool
+LUCI_DEPENDS:=+ocserv +certtool
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

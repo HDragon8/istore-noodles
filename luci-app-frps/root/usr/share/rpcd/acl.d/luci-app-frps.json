@@ -1,18 +1,11 @@
 {
 	"luci-app-frps": {
-		"description": "Grant access to LuCI app frps",
+		"description": "Grant UCI access for luci-app-frps",
 		"read": {
-			"file": {
-				"/etc/group": [ "read" ],
-				"/etc/passwd": [ "read" ]
-			},
-			"ubus": {
-				"service": [ "list" ]
-			},
-			"uci": ["frps"]
+			"uci": [ "frps" ]
 		},
 		"write": {
-			"uci": ["frps"]
+			"uci": [ "frps" ]
 		}
 	}
 }

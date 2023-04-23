@@ -1,14 +1,11 @@
 module("luci.controller.docker", package.seeall)
 
 function index()
-	if not nixio.fs.access("/etc/config/docker") then
+	if not nixio.fs.access("/etc/config/dockerd") then
 		return
 	end
 
-	local page = entry({"admin", "services", "docker"}, cbi("docker"), _("Docker CE Container"), 199)
-	page.dependent = true
-	page.acl_depends = { "luci-app-docker" }
-
+	entry({"admin", "services", "docker"}, cbi("docker"), _("Docker CE Container"), 199).dependent = true
 	entry({"admin", "services", "docker", "status"}, call("act_status")).leaf = true
 end
 

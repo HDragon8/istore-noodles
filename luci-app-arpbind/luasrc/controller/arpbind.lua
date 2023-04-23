@@ -10,7 +10,5 @@ function index()
 		return
 	end
 
-	local page = entry({"admin", "network", "arpbind"}, cbi("arpbind"), _("IP/MAC Binding"), 45)
-	page.dependent = true
-	page.acl_depends = { "luci-app-arpbind" }
+	entry({"admin", "network", "arpbind"}, cbi("arpbind"), _("IP/MAC Binding"), 45).dependent = true
 end

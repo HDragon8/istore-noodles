@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=NTP time synchronisation configuration module
-LUCI_DEPENDS:=+luci-compat +ntpclient
+LUCI_DEPENDS:=+ntpclient
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

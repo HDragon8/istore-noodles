@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI Support for AHCPd
-LUCI_DEPENDS:=+luci-compat +ahcpd
+LUCI_DEPENDS:=+ahcpd
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

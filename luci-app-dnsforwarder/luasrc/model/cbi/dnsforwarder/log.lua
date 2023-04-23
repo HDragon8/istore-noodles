@@ -9,7 +9,8 @@ function sync_value_to_file(value, file)
 	end
 end
 
-m = Map("dnsforwarder", translate("运行日志"))
+m = Map("dnsforwarder")
+m.title = translate("运行日志")
 m.description = translate("如果想观察日志，需要在配置文件中写明LogOn true 和 LogFileFolder /var/log")
 
 s = m:section(TypedSection, "arguments")

@@ -28,6 +28,7 @@ end
 
 <%+header%>
 
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
 XHR.poll(10, '<%=REQUEST_URI%>', { status: 1 },
 	function(x, info)
@@ -35,31 +36,24 @@ XHR.poll(10, '<%=REQUEST_URI%>', { status: 1 },
 	var hnadiv = document.getElementById('olsrd_hna');
 	if (hnadiv)
 	{
-		var s = '<div class="tr cbi-section-table-titles">' +
-			'<div class="th cbi-section-table-cell"><%:Announced network%></div>' +
-			'<div class="th cbi-section-table-cell"><%:OLSR gateway%></div>' +
-			'<div class="th cbi-section-table-cell"><%:Validity Time%></div>' +
-			'</div>';
-
+		var s = '';
 		for (var idx = 0; idx < info.length; idx++)
 		{
 			var hna = info[idx];
 			var linkgw = ''
-			s += '<div class="tr cbi-section-table-row cbi-rowstyle-'+(1 + (idx % 2))+' proto-' + hna.proto + '">'
+			s += '<tr class="cbi-section-table-row cbi-rowstyle-'+(1 + (idx % 2))+' proto-' + hna.proto + '">'
 			if (hna.proto == '6') {
 				linkgw = '<a href="http://[' + hna.gateway + ']/cgi-bin-status.html">' + hna.gateway + '</a>'
 			} else {
 				linkgw = '<a href="http://' + hna.gateway + '/cgi-bin-status.html">' + hna.gateway + '</a>'
 			}
 
-			var validity;
 			if (hna.validityTime != undefined) {
 				validity = hna.validityTime + 's'
 			} else {
 				validity = '-'
 			}
 
-			var hostname;
 			if (hna.hostname != undefined) {
 				hostname = ' / <a href="http://' + hna.hostname + '/cgi-bin-status.html">' + hna.hostname + '</a>'
 			} else {
@@ -67,11 +61,11 @@ XHR.poll(10, '<%=REQUEST_URI%>', { status: 1 },
 			}
 
 			s += String.format(
-                                '<div class="td cbi-section-table-cell left">%s</div>' +
-                                '<div class="td cbi-section-table-cell left">%s</div>' +
-                                '<div class="td cbi-section-table-cell left">%s</div>', hna.destination + '/' + hna.genmask, linkgw + hostname, validity
+                                '<td class="cbi-section-table-cell">%s</td>' +
+                                '<td class="cbi-section-table-cell">%s</td>' +
+                                '<td class="cbi-section-table-cell">%s</td>', hna.destination + '/' + hna.genmask, linkgw + hostname, validity
                                 )
-			s += '</div>'
+			s += '</tr>'
 		}
 		hnadiv.innerHTML = s;
 	}
@@ -85,18 +79,21 @@ XHR.poll(10, '<%=REQUEST_URI%>', { status: 1 },
 <fieldset class="cbi-section">
 
 	<legend><%:Overview of currently active OLSR host net announcements%></legend>
-	<div class="table cbi-section-table" id="olsrd_hna">
-		<div class="tr cbi-section-table-titles">
-			<div class="th cbi-section-table-cell"><%:Announced network%></div>
-			<div class="th cbi-section-table-cell"><%:OLSR gateway%></div>
-			<div class="th cbi-section-table-cell"><%:Validity Time%></div>
-		</div>
+	<table class="cbi-section-table">
+		<thead>
+		<tr class="cbi-section-table-titles">
+			<th class="cbi-section-table-cell"><%:Announced network%></th>
+			<th class="cbi-section-table-cell"><%:OLSR gateway%></th>
+			<th class="cbi-section-table-cell"><%:Validity Time%></th>
+		</tr>
 
+		</thead>
+		<tbody id="olsrd_hna">
 		<% for k, route in ipairs(hna) do %>
 
-		<div class="tr cbi-section-table-row cbi-rowstyle-<%=i%> proto-<%=hna[k].proto%>">
-			<div class="td cbi-section-table-cell left"><%=hna[k].destination%>/<%=hna[k].genmask%> </div>
-			<div class="td cbi-section-table-cell left">
+		<tr class="cbi-section-table-row cbi-rowstyle-<%=i%> proto-<%=hna[k].proto%>">
+			<td class="cbi-section-table-cell"><%=hna[k].destination%>/<%=hna[k].genmask%> </td>
+			<td class="cbi-section-table-cell">
 				<% if hna[k].proto == '6' then %>
 				<a href="http://[<%=hna[k].gateway%>]/cgi-bin-status.html"><%=hna[k].gateway%></a>
 				<% else %>
@@ -105,19 +102,20 @@ XHR.poll(10, '<%=REQUEST_URI%>', { status: 1 },
 				<% if hna[k].hostname then %>
 				 / <a href="http://<%=hna[k].hostname%>/cgi-bin-status.html"><%=hna[k].hostname%></a>
 				<% end %>
-			</div>
+			</td>
 			<% if hna[k].validityTime then
 				validity = hna[k].validityTime .. 's'
 			else
 				validity = '-'
 			end %>
 
-			<div class="td cbi-section-table-cell left"><%=validity%></div>
-		</div>
+			<td class="cbi-section-table-cell"><%=validity%></td>
+		</tr>
 
 		<% i = ((i % 2) + 1)
 		end %>
-	</div>
+		</tbody>
+	</table>
 </fieldset>
 
 <%+status-olsr/common_js%>

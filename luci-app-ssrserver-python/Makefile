@@ -9,11 +9,11 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=LuCI for SSR Server Python
 LUCI_DEPENDS:=+python3
 LUCI_PKGARCH:=all
+
+PKG_NAME:=luci-app-ssrserver-python
 PKG_VERSION:=3.2.0
 PKG_RELEASE:=7
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature
-
-
