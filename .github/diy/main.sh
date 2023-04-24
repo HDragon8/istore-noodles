@@ -16,7 +16,7 @@ function mvdir() {
 mv -n `find $1/* -maxdepth 0 -type d` ./
 rm -rf $1
 }
-git clone --depth 1 https://github.com/HDragon8/noodles-default-settings noodles-default-settings
+git clone --depth 1 https://github.com/HDragon8/A-default-settings A-default-settings
 git clone --depth 1 https://github.com/kiddin9/luci-theme-edge
 git clone --depth 1 https://github.com/kiddin9/openwrt-amule-dlp && mvdir openwrt-amule-dlp
 #git clone --depth 1 https://github.com/yichya/luci-app-xray
@@ -145,7 +145,7 @@ svn export https://github.com/immortalwrt/packages/trunk/net/gowebdav
 #svn export https://github.com/istoreos/istoreos/trunk/package/istoreos-files
 #kiddin9's packages
 
-#git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system luci-app-samba4 luci-app-firewall
+git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system
 #firewall firewall4 luci-app-firewall
 
 rm -rf luci-app-netdata
@@ -204,10 +204,10 @@ rm -rf r8168
 rm -rf rtl88x2bu
 rm -rf shellsync
 #移动luci-base、luci-mod-status、luci-mod-system到A-model文件夹
-#mkdir A-model
-#mv -f luci-base A-model/luci-base
-#mv -f luci-mod-status A-model/luci-mod-status
-#mv -f luci-mod-system A-model/luci-mod-system
+mkdir A-model
+mv -f luci-base A-model/luci-base
+mv -f luci-mod-status A-model/luci-mod-status
+mv -f luci-mod-system A-model/luci-mod-system
 #mv -f luci-app-samba4 A-model/luci-app-samba4
 #mv -f nftables A-model/nftables
 #mv -f libnftnl A-model/libnftnl
