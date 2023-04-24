@@ -521,13 +521,8 @@ String.prototype.format = function()
 	var quot_esc = [/"/g, '&#34;', /'/g, '&#39;'];
 
 	function esc(s, r) {
-		var t = typeof(s);
-
-		if (s == null || t === 'object' || t === 'function')
+		if (typeof(s) !== 'string' && !(s instanceof String))
 			return '';
-
-		if (t !== 'string')
-			s = String(s);
 
 		for (var i = 0; i < r.length; i += 2)
 			s = s.replace(r[i], r[i+1]);
@@ -764,14 +759,72 @@ function cbi_update_table(table, data, placeholder) {
 	if (!isElem(target))
 		return;
 
-	var t = L.dom.findClassInstance(target);
+	target.querySelectorAll('tr.table-titles, .tr.table-titles, .cbi-section-table-titles').forEach(function(thead) {
+		var titles = [];
 
-	if (!(t instanceof L.ui.Table)) {
-		t = new L.ui.Table(target);
-		L.dom.bindClassInstance(target, t);
-	}
+		thead.querySelectorAll('th, .th').forEach(function(th) {
+			titles.push(th);
+		});
 
-	t.update(data, placeholder);
+		if (Array.isArray(data)) {
+			var n = 0, rows = target.querySelectorAll('tr, .tr'), trows = [];
+
+			data.forEach(function(row) {
+				var trow = E('tr', { 'class': 'tr' });
+
+				for (var i = 0; i < titles.length; i++) {
+					var text = (titles[i].innerText || '').trim();
+					var td = trow.appendChild(E('td', {
+						'class': titles[i].className,
+						'data-title': (text !== '') ? text : null
+					}, (row[i] != null) ? row[i] : ''));
+
+					td.classList.remove('th');
+					td.classList.add('td');
+				}
+
+				trow.classList.add('cbi-rowstyle-%d'.format((n++ % 2) ? 2 : 1));
+
+				trows[n] = trow;
+			});
+
+			for (var i = 1; i <= n; i++) {
+				if (rows[i])
+					target.replaceChild(trows[i], rows[i]);
+				else
+					target.appendChild(trows[i]);
+			}
+
+			while (rows[++n])
+				target.removeChild(rows[n]);
+
+			if (placeholder && target.firstElementChild === target.lastElementChild) {
+				var trow = target.appendChild(E('tr', { 'class': 'tr placeholder' }));
+				var td = trow.appendChild(E('td', { 'class': titles[0].className }, placeholder));
+
+				td.classList.remove('th');
+				td.classList.add('td');
+			}
+		}
+		else {
+			thead.parentNode.style.display = 'none';
+
+			thead.parentNode.querySelectorAll('tr, .tr, .cbi-section-table-row').forEach(function(trow) {
+				if (trow !== thead) {
+					var n = 0;
+					trow.querySelectorAll('th, td, .th, .td').forEach(function(td) {
+						if (n < titles.length) {
+							var text = (titles[n++].innerText || '').trim();
+							if (text !== '')
+								td.setAttribute('data-title', text);
+						}
+					});
+				}
+			});
+
+			thead.parentNode.style.display = '';
+		}
+	});
 }
 
 function showModal(title, children)
@@ -796,7 +849,5 @@ document.addEventListener('DOMContentLoaded', function() {
 			L.hideTooltip(ev);
 	});
 
-	L.require('ui').then(function(ui) {
-		document.querySelectorAll('.table').forEach(cbi_update_table);
-	});
+	document.querySelectorAll('.table').forEach(cbi_update_table);
 });

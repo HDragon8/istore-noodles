@@ -11,9 +11,7 @@ PKG_NAME:=automount
 PKG_FLAGS:=nonshared
 PKG_RELEASE:=$(COMMITCOUNT)
 
-PKG_CONFIG_DEPENDS:= \
-	CONFIG_LINUX_5_10 \
-	CONFIG_TARGET_ramips
+PKG_CONFIG_DEPENDS:=CONFIG_TARGET_ramips
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -29,8 +27,7 @@ define Package/automount
     +kmod-fs-ext4 \
     +kmod-fs-exfat \
     +kmod-fs-vfat \
-    +LINUX_5_10:ntfs-3g \
-    +!LINUX_5_10:ntfs3-mount
+    +ntfs3-mount
   PKGARCH:=all
 endef
 

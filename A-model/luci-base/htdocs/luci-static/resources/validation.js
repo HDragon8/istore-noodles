@@ -61,15 +61,9 @@ var Validator = baseclass.extend({
 			valid = this.vstack[0].apply(this, this.vstack[1]);
 
 		if (valid !== true) {
-			var message = _('Expecting: %s').format(this.error);
-			this.field.setAttribute('data-tooltip', message);
+			this.field.setAttribute('data-tooltip', _('Expecting: %s').format(this.error));
 			this.field.setAttribute('data-tooltip-style', 'error');
-			this.field.dispatchEvent(new CustomEvent('validation-failure', {
-				bubbles: true,
-				detail: {
-					message: message
-				}
-			}));
+			this.field.dispatchEvent(new CustomEvent('validation-failure', { bubbles: true }));
 			return false;
 		}
 
@@ -80,12 +74,7 @@ var Validator = baseclass.extend({
 			this.assert(false, valid);
 			this.field.setAttribute('data-tooltip', valid);
 			this.field.setAttribute('data-tooltip-style', 'error');
-			this.field.dispatchEvent(new CustomEvent('validation-failure', {
-				bubbles: true,
-				detail: {
-					message: valid
-				}
-			}));
+			this.field.dispatchEvent(new CustomEvent('validation-failure', { bubbles: true }));
 			return false;
 		}
 
@@ -424,15 +413,6 @@ var ValidatorFactory = baseclass.extend({
 
 		uciname: function() {
 			return this.assert(this.value.match(/^[a-zA-Z0-9_]+$/), _('valid UCI identifier'));
-		},
-
-		netdevname: function() {
-			var v = this.value;
-
-			if (v == '.' || v == '..')
-				return this.assert(false, _('valid network device name, not "." or ".."'));
-
-			return this.assert(v.match(/^[^:\/%\s]{1,15}$/), _('valid network device name between 1 and 15 characters not containing ":", "/", "%" or spaces'));
 		},
 
 		range: function(min, max) {

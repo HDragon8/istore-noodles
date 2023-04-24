@@ -101,6 +101,15 @@ var _init = null,
     _protocols = {},
     _protospecs = {};
 
+function strcmp(a, b) {
+	if (a > b)
+		return 1;
+	else if (a < b)
+		return -1;
+	else
+		return 0;
+}
+
 function getProtocolHandlers(cache) {
 	return callNetworkProtoHandlers().then(function(protos) {
 		/* Register "none" protocol */
@@ -476,7 +485,10 @@ function initNetworkState(refresh) {
 						}
 
 						ports.sort(function(a, b) {
-							return L.naturalCompare(a.role, b.role) || L.naturalCompare(a.index, b.index);
+							if (a.role != b.role)
+								return (a.role < b.role) ? -1 : 1;
+
+							return (a.index - b.index);
 						});
 
 						for (var i = 0, port; (port = ports[i]) != null; i++) {
@@ -550,14 +562,18 @@ function ifnameOf(obj) {
 }
 
 function networkSort(a, b) {
-	return L.naturalCompare(a.getName(), b.getName());
+	return strcmp(a.getName(), b.getName());
 }
 
 function deviceSort(a, b) {
-	var typeWeigth = { wifi: 2, alias: 3 };
+	var typeWeigth = { wifi: 2, alias: 3 },
+        weightA = typeWeigth[a.getType()] || 1,
+        weightB = typeWeigth[b.getType()] || 1;
 
-	return L.naturalCompare(typeWeigth[a.getType()] || 1, typeWeigth[b.getType()] || 1) ||
-	       L.naturalCompare(a.getName(), b.getName());
+    if (weightA != weightB)
+    	return weightA - weightB;
+
+	return strcmp(a.getName(), b.getName());
 }
 
 function formatWifiEncryption(enc) {
@@ -1425,7 +1441,7 @@ Network = baseclass.extend(/** @lends LuCI.network.prototype */ {
 				rv.push(this.lookupWifiNetwork(wifiIfaces[i]['.name']));
 
 			rv.sort(function(a, b) {
-				return L.naturalCompare(a.getID(), b.getID());
+				return strcmp(a.getID(), b.getID());
 			});
 
 			return rv;
@@ -1523,7 +1539,10 @@ Network = baseclass.extend(/** @lends LuCI.network.prototype */ {
 			}
 
 			rv.sort(function(a, b) {
-				return L.naturalCompare(a.metric, b.metric) || L.naturalCompare(a.interface, b.interface);
+				if (a.metric != b.metric)
+					return (a.metric - b.metric);
+
+				return strcmp(a.interface, b.interface);
 			});
 
 			return rv;
@@ -1971,7 +1990,7 @@ Hosts = baseclass.extend(/** @lends LuCI.network.Hosts.prototype */ {
 		}
 
 		return rv.sort(function(a, b) {
-			return L.naturalCompare(a[0], b[0]);
+			return strcmp(a[0], b[0]);
 		});
 	}
 });
@@ -3400,10 +3419,19 @@ WifiDevice = baseclass.extend(/** @lends LuCI.network.WifiDevice.prototype */ {
 		if (this.ubus('dev', 'iwinfo', 'type') == 'wl')
 			type = 'Broadcom';
 
-		return '%s 802.11%s Wireless Controller (%s)'.format(
-			type || 'Generic',
-			this.getHWModes().sort(L.naturalCompare).join(''),
-			this.getName());
+		var hwmodes = this.getHWModes(),
+		    modestr = '';
+
+		hwmodes.sort(function(a, b) {
+			if (a.length != b.length)
+				return a.length - b.length;
+
+			return strcmp(a, b);
+		});
+
+		modestr = hwmodes.join('');
+
+		return '%s 802.11%s Wireless Controller (%s)'.format(type || 'Generic', modestr, this.getName());
 	},
 
 	/**
@@ -4376,11 +4404,5 @@ WifiNetwork = baseclass.extend(/** @lends LuCI.network.WifiNetwork.prototype */ 
 		})(mac, deauth, reason, ban_time);
 	}
 });
-
-setTimeout(function(){
-try{
-  document.getElementsByClassName('cbi-button-apply')[0].children[3].children[0].value='1'
-}catch(err) {
-}},1000)
 
 return Network;
