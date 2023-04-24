@@ -1,25 +1,39 @@
-#!/usr/bin/ucode
-/* Copyright (C) 2022 ImmortalWrt.org */
+#!/bin/sh
 
-'use strict';
+a=$(ip address | grep ^[0-9] | awk -F: '{print $2}' | sed "s/ //g" | grep '^[e]' | grep -v "@" | grep -v "\.")
+b=$(echo "$a" | wc -l)
+rm -f /tmp/state/ethinfo
 
-import { connect } from 'ubus';
+echo -n "[" > /tmp/state/ethinfo
 
-const ubus = connect();
-const stat = ubus.call('network.device', 'status', {});
-if (!stat) {
-	print('{}');
-	exit(1);
-}
+for i in $(seq 1 $b)
+do
+	h=$(echo '{"name":' )
+	c=$(echo "$a" | sed -n ${i}p)
+	d=$(ethtool $c)
 
-let device_list = [];
-map(keys(stat), (ifname) => {
-	if (ifname && stat[ifname]?.devtype === 'ethernet' && length(stat[ifname]['link-advertising']))
-		push(device_list, ifname);
-});
+	e=$(echo "$d" | grep "Link detected" | awk -F: '{printf $2}' | sed 's/^[ \t]*//g')
+	if [ $e = yes ]; then
+		l=1
+	else
+		l=0
+	fi
 
-sort(device_list, (a, b) => {
-	return a > b;
-});
+	f=$(echo "$d" | grep "Speed" | awk -F: '{printf $2}' | sed 's/^[ \t]*//g' | tr -d "Unknown!")
+	[ -z "$f" ] && f=" - "
 
-print(device_list);
+	g=$(echo "$d" | grep "Duplex" | awk -F: '{printf $2}' | sed 's/^[ \t]*//g')
+	if [ "$g" == "Full" ]; then
+		x=1
+	else
+		x=0
+	fi
+
+	echo -n "$h \"$c\", \"status\": $l, \"speed\": \"$f\", \"duplex\": $x}," >> /tmp/state/ethinfo
+done
+
+sed -i 's/.$//' /tmp/state/ethinfo
+
+echo -n "]" >> /tmp/state/ethinfo
+
+cat /tmp/state/ethinfo
