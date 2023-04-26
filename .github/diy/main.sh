@@ -145,7 +145,7 @@ svn export https://github.com/immortalwrt/packages/trunk/net/gowebdav
 #svn export https://github.com/istoreos/istoreos/trunk/package/istoreos-files
 #kiddin9's packages
 
-#git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system
+git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system
 #firewall firewall4 luci-app-firewall
 
 rm -rf luci-app-netdata
@@ -168,7 +168,7 @@ libs/jpcre2 libs/wxbase libs/rapidjson libs/libcron libs/quickjspp libs/toml11 \
 utils/cpulimit utils/filebrowser utils/cups net/udp2raw net/msd_lite net/xfrpc net/bitsrunlogin-go \
 utils/phicomm-k3screenctrl net/apinger net/basicstation libs/sx1302_hal
 
-git_sparse_clone openwrt-21.02 "https://github.com/immortalwrt/immortalwrt" "immortal1" package/emortal/autocore package/emortal/automount
+#git_sparse_clone openwrt-21.02 "https://github.com/immortalwrt/immortalwrt" "immortal1" package/emortal/autocore package/emortal/automount
 
 git_sparse_clone master "https://github.com/immortalwrt/immortalwrt" "immortal" package/kernel/rtl88x2bu package/utils/mhz \
 package/kernel/r8168 package/kernel/rtl8821cu package/kernel/rtl8189es package/emortal/automount
@@ -179,7 +179,7 @@ package/kernel/r8168 package/kernel/rtl8821cu package/kernel/rtl8189es package/e
 git_sparse_clone master "https://github.com/coolsnowwolf/luci" "leluci" applications libs/luci-lib-fs
 mv -f applications luciapp
 
-git_sparse_clone openwrt-21.02 "https://github.com/immortalwrt/luci" "immluci1" modules/luci-base modules/luci-mod-status modules/luci-mod-system
+#git_sparse_clone openwrt-21.02 "https://github.com/immortalwrt/luci" "immluci1" modules/luci-base modules/luci-mod-status modules/luci-mod-system
 
 git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci" applications protocols/luci-proto-minieap
 mv -n applications/* luciapp/; rm -rf applications
