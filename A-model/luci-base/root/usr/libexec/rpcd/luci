@@ -165,7 +165,11 @@ local methods = {
 			local ok, fd = pcall(io.open, "/usr/share/fw3/helpers.conf", "r")
 			local rv = {}
 
-			if ok then
+			if not (ok and fd) then
+				ok, fd = pcall(io.open, "/usr/share/firewall4/helpers", "r")
+			end
+
+			if ok and fd then
 				local entry
 
 				while true do
@@ -203,12 +207,16 @@ local methods = {
 	getFeatures = {
 		call = function()
 			local fs = require "nixio.fs"
+			local sys = require "luci.sys"
+			local kernel_version = sys.exec("echo -n $(uname -r)")
 			local rv = {}
 			local ok, fd
 
 			rv.firewall      = fs.access("/sbin/fw3")
+			rv.firewall4     = fs.access("/sbin/fw4")
 			rv.opkg          = fs.access("/bin/opkg")
-			rv.offloading    = fs.access("/sys/module/xt_FLOWOFFLOAD/refcnt")
+			rv.offloading    = fs.access("/sys/module/xt_FLOWOFFLOAD/refcnt") or fs.access("/sys/module/nft_flow_offload/refcnt")
+			rv.fullconenat   = fs.access("/lib/modules/" .. kernel_version .. "/xt_FULLCONENAT.ko") or fs.access("/lib/modules/" .. kernel_version .. "/nft_fullcone.ko")
 			rv.br2684ctl     = fs.access("/usr/sbin/br2684ctl")
 			rv.swconfig      = fs.access("/sbin/swconfig")
 			rv.odhcpd        = fs.access("/usr/sbin/odhcpd")
@@ -218,7 +226,6 @@ local methods = {
 			rv.dropbear      = fs.access("/usr/sbin/dropbear")
 			rv.cabundle      = fs.access("/etc/ssl/certs/ca-certificates.crt")
 			rv.relayd        = fs.access("/usr/sbin/relayd")
-			rv.dsl           = fs.access("/sbin/vdsl_cpe_control")
 
 			local wifi_features = { "eap", "11n", "11ac", "11r", "acs", "sae", "owe", "suiteb192", "wep", "wps" }
 
@@ -617,61 +624,61 @@ local methods = {
 
 	getCPUBench = {
 		call = function()
-			local cpubench = readfile("/etc/bench.log") or ""
-			return { cpubench = cpubench }
+			local sys = require "luci.sys"
+			local cpubench = {}
+
+			cpubench.cpubench = sys.exec("cat /etc/bench.log 2>/dev/null")
+			return cpubench
 		end
 	},
 
 	getCPUInfo = {
 		call = function()
-			if not fs.access("/sbin/cpuinfo") then
-				return {}
-			end
-
 			local sys = require "luci.sys"
-			local cpuinfo = sys.exec("/sbin/cpuinfo")
-			if (cpuinfo == nil) or (cpuinfo == "") then
-				cpuinfo = "?"
-			end
+			local cpuinfo = {}
 
-			return { cpuinfo = cpuinfo }
+			cpuinfo.cpuinfo = sys.exec("/sbin/cpuinfo")
+
+			return cpuinfo
 		end
 	},
 
 	getCPUUsage = {
 		call = function()
 			local sys = require "luci.sys"
-			local cpuusage = sys.exec("top -n1 | awk '/^CPU/ {printf(\"%d%%\", 100 - $8)}'") or "?"
-			return { cpuusage = cpuusage }
+			local cpuusage = {}
+
+			cpuusage.cpuusage = sys.exec("top -n1 | awk '/^CPU/ {printf(\"%d%\", 100 - $8)}'") or "6%"
+			return cpuusage
 		end
 	},
 
 	getETHInfo = {
 		call = function()
 			local sys = require "luci.sys"
-			local ethinfo = json.parse(sys.exec("/sbin/ethinfo")) or {}
-			return { ethinfo = ethinfo }
+			local result = sys.exec("ethinfo 2>/dev/null")
+			return { result = result }
 		end
 	},
 
 	getOnlineUsers = {
 		call = function()
 			local sys = require "luci.sys"
-			local onlineusers = sys.exec("cat /proc/net/arp | grep 'br-lan' | grep '0x2' | wc -l")
-			return { onlineusers = onlineusers }
+			local onlineusers = {}
+
+			onlineusers.onlineusers = sys.exec("cat /proc/net/arp | grep 'br-lan' | grep '0x2' | wc -l")
+			return onlineusers
 
 		end
 	},
 
 	getTempInfo = {
 		call = function()
-			if not fs.access("/sbin/tempinfo") then
-				return {}
-			end
-
 			local sys = require "luci.sys"
-			local tempinfo = sys.exec("/sbin/tempinfo")
-			return { tempinfo = tempinfo }
+			local tempinfo = {}
+
+			tempinfo.tempinfo = sys.exec("/sbin/tempinfo 2>/dev/null")
+			return tempinfo
 		end
 	}
 }

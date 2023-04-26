@@ -26,7 +26,7 @@ define Package/luci-base/conffiles
 /etc/config/ucitrack
 endef
 
-include ../../luci.mk
+include $(TOPDIR)/feeds/luci/luci.mk
 
 define Host/Configure
 endef

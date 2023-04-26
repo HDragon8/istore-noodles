@@ -7,7 +7,7 @@
 			"recurse": true
 		},
 		"auth": {
-			"methods": [ "cookie:sysauth" ],
+			"methods": [ "cookie:sysauth_https", "cookie:sysauth_http" ],
 			"login": true
 		}
 	},
@@ -34,25 +34,7 @@
 
 	"admin/services": {
 		"title": "Services",
-		"order": 30,
-		"action": {
-			"type": "firstchild",
-			"recurse": true
-		}
-	},
-
-	"admin/nas": {
-		"title": "NAS",
 		"order": 40,
-		"action": {
-			"type": "firstchild",
-			"recurse": true
-		}
-	},
-
-	"admin/vpn": {
-		"title": "VPN",
-		"order": 50,
 		"action": {
 			"type": "firstchild",
 			"recurse": true
@@ -61,7 +43,16 @@
 
 	"admin/network": {
 		"title": "Network",
-		"order": 60,
+		"order": 50,
+		"action": {
+			"type": "firstchild",
+			"recurse": true
+		}
+	},
+
+	"admin/vpn": {
+		"title": "VPN",
+		"order": 70,
 		"action": {
 			"type": "firstchild",
 			"recurse": true
@@ -96,7 +87,8 @@
 		},
 		"depends": {
 			"acl": [ "luci-base" ]
-		}
+		},
+		"firstchild_ineligible": true
 	},
 
 	"admin/uci": {
@@ -123,7 +115,7 @@
 			"post": true
 		},
 		"auth": {
-			"methods": [ "cookie:sysauth" ]
+			"methods": [ "cookie:sysauth_https", "cookie:sysauth_http" ]
 		}
 	},
 
@@ -136,7 +128,7 @@
 			"post": true
 		},
 		"auth": {
-			"methods": [ "cookie:sysauth" ]
+			"methods": [ "cookie:sysauth_https", "cookie:sysauth_http" ]
 		}
 	},
 
