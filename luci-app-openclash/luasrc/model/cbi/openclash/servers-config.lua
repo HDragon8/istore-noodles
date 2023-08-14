@@ -174,7 +174,7 @@ o:depends("type", "trojan")
 o = s:option(Value, "tc_ip", translate("Server IP"))
 o.rmempty = true
 o.placeholder = translate("127.0.0.1")
-o.datatype = "ip4addr"
+o.datatype = "or(ip4addr, ip6addr)"
 o:depends("type", "tuic")
 
 o = s:option(Value, "tc_token", translate("Token"))
@@ -785,6 +785,63 @@ o:value("ipv6")
 o:value("ipv6-prefer")
 o.default = "dual"
 
+-- [[ smux ]]--
+o = s:option(ListValue, "multiplex", translate("Multiplex")..translate("(Only Meta Core)"))
+o.rmempty = false
+o:value("true")
+o:value("false")
+o.default = "false"
+
+o = s:option(ListValue, "multiplex_protocol", translate("Protocol"))
+o.rmempty = true
+o:value("smux")
+o:value("yamux")
+o:value("h2mux")
+o.default = "smux"
+o:depends("multiplex", "true")
+
+o = s:option(Value, "multiplex_max_connections", translate("Max-connections"))
+o.rmempty = true
+o.placeholder = "4"
+o.default = "4"
+o.datatype = "uinteger"
+o:depends("multiplex", "true")
+
+o = s:option(Value, "multiplex_min_streams", translate("Min-streams"))
+o.rmempty = true
+o.placeholder = "4"
+o.default = "4"
+o.datatype = "uinteger"
+o:depends("multiplex", "true")
+
+o = s:option(Value, "multiplex_max_streams", translate("Max-streams"))
+o.rmempty = true
+o.placeholder = "0"
+o.default = "0"
+o.datatype = "uinteger"
+o:depends("multiplex", "true")
+
+o = s:option(ListValue, "multiplex_padding", translate("Padding"))
+o.rmempty = false
+o:value("true")
+o:value("false")
+o.default = "false"
+o:depends("multiplex", "true")
+
+o = s:option(ListValue, "multiplex_statistic", translate("Statistic"))
+o.rmempty = false
+o:value("true")
+o:value("false")
+o.default = "false"
+o:depends("multiplex", "true")
+
+o = s:option(ListValue, "multiplex_only_tcp", translate("Only-tcp"))
+o.rmempty = false
+o:value("true")
+o:value("false")
+o.default = "false"
+o:depends("multiplex", "true")
+
 -- [[ interface-name ]]--
 o = s:option(Value, "interface_name", translate("interface-name"))
 o.rmempty = true
@@ -795,7 +852,46 @@ o = s:option(Value, "routing_mark", translate("routing-mark"))
 o.rmempty = true
 o.placeholder = translate("2333")
 
-o = s:option(DynamicList, "groups", translate("Proxy Group"))
+-- [[ other-setting ]]--
+o = s:option(Value, "other_parameters", translate("Other Parameters"))
+o.template = "cbi/tvalue"
+o.rows = 20
+o.wrap = "off"
+o.description = font_red..bold_on..translate("Edit Your Other Parameters Here")..bold_off..font_off
+o.rmempty = true
+function o.cfgvalue(self, section)
+	if self.map:get(section, "other_parameters") == nil then
+		return "# Example:\n"..
+		"# Only support YAML, four spaces need to be reserved at the beginning of each line to maintain formatting alignment\n"..
+		"# 示例：\n"..
+		"# 仅支持 YAML, 每行行首需要多保留四个空格以使脚本处理后能够与上方配置保持格式对齐\n"..
+		"#    type: ss\n"..
+		"#    server: \"127.0.0.1\"\n"..
+		"#    port: 443\n"..
+		"#    cipher: rc4-md5\n"..
+		"#    password: \"123456\"\n"..
+		"#    udp: true\n"..
+		"#    udp-over-tcp: false\n"..
+		"#    ip-version: \"dual\"\n"..
+		"#    tfo: true\n"..
+		"#    smux:\n"..
+		"#      enabled: false\n"..
+		"#    plugin-opts:\n"..
+		"#      mode: tls\n"..
+		"#      host: world.taobao.com"
+	else
+		return Value.cfgvalue(self, section)
+	end
+end
+function o.validate(self, value)
+	if value then
+		value = value:gsub("\r\n?", "\n")
+		value = value:gsub("%c*$", "")
+	end
+	return value
+end
+
+o = s:option(DynamicList, "groups", translate("Proxy Group (Support Regex)"))
 o.description = font_red..bold_on..translate("No Need Set when Config Create, The added Proxy Groups Must Exist")..bold_off..font_off
 o.rmempty = true
 o:value("all", translate("All Groups"))
@@ -805,7 +901,7 @@ m.uci:foreach("openclash", "groups",
 			   o:value(s.name)
 			end
 		end)
-
+		
 local t = {
     {Commit, Back}
 }

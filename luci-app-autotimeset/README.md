@@ -1,4 +1,4 @@
-[![若部分图片无法正常显示，请挂上机场浏览或点这里到末尾看修复教程](https://visitor-badge.glitch.me/badge?page_id=sirpdboy-visitor-badge)](#解决-github-网页上图片显示失败的问题) [![](https://img.shields.io/badge/TG群-点击加入-FFFFFF.svg)](https://t.me/joinchat/AAAAAEpRF88NfOK5vBXGBQ)
+[![若部分图片无法正常显示，请挂上机场浏览或点这里到末尾看修复教程](https://visitor-badge-deno.deno.dev/sirpdboy.sirpdboy.svg)](#解决-github-网页上图片显示失败的问题) [![](https://img.shields.io/badge/TG群-点击加入-FFFFFF.svg)](https://t.me/joinchat/AAAAAEpRF88NfOK5vBXGBQ)
 
 [autotimeset  定时设置插件](https://github.com/sirpdboy/luci-app-autotimeset)
 
@@ -7,6 +7,9 @@
 请 **认真阅读完毕** 本页面，本页面包含注意事项和如何使用。
 
 ## 功能说明：
+
+### 定时设置2.0版
+#### 2023.5.23 定时设置2.0版：定时执行任务设置和开机启动任务设置二合一版，并增加自定义脚本功能。
 
 ### 定时设置1.9版
 #### 2023.4.1 定时设置1.9版：加入定时断网重连、定时检测WAN3重启等服务。
@@ -75,7 +78,7 @@
 
 - 网络速度测试 ：https://github.com/sirpdboy/NetSpeedTest
 
-- 定时设置插件 : https://github.com/sirpdboy/luci-app-autotimeset
+- 任务设置（定时和开机二合一）插件 : https://github.com/sirpdboy/luci-app-autotimeset
 
 - 关机功能插件 : https://github.com/sirpdboy/luci-app-poweroffdevice
 

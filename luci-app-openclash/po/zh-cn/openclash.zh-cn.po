@@ -663,8 +663,8 @@ msgstr "保留配置"
 msgid "Only Update Servers Below When Subscription"
 msgstr "订阅时仅更新节点和代理集，保留下方策略组设置，不修改顺序"
 
-msgid "New Servers Group"
-msgstr "新节点默认策略组"
+msgid "New Servers Group (Support Regex)"
+msgstr "新节点默认策略组（请勿重复添加，支持正则匹配）"
 
 msgid "Set The New Subscribe Server's Default Proxy Groups"
 msgstr "选择符合订阅要求的新节点的默认策略组（请勿重复添加）"
@@ -783,8 +783,14 @@ msgstr "别名（请勿重名）"
 msgid "Rule Behavior"
 msgstr "规则类型"
 
+msgid "Rule Format"
+msgstr "规则格式"
+
 msgid "Choose The Rule Behavior"
 msgstr "选择规则类型"
+
+msgid "Choose The Rule File Format, For More Info:"
+msgstr "选择规则格式, 了解使用方式请前往："
 
 msgid "Rule Providers Path"
 msgstr "规则集路径"
@@ -837,8 +843,8 @@ msgstr "Load-Balance【负载均衡】"
 msgid "Relay-Traffic"
 msgstr "Relay【嵌套中转】"
 
-msgid "Other Group"
-msgstr "包含其他策略组（请勿重复添加）"
+msgid "Other Group (Support Regex)"
+msgstr "包含其他策略组（请勿重复添加，支持正则匹配）"
 
 msgid "The Added Proxy Groups Must Exist Except 'DIRECT' & 'REJECT'"
 msgstr "注意：除'DIRECT'和'REJECT'外，修改配置文件前添加的其他策略组必须已创建"
@@ -846,8 +852,8 @@ msgstr "注意：除'DIRECT'和'REJECT'外，修改配置文件前添加的其�
 msgid "The Added Proxy Provider Must Exist"
 msgstr "修改配置文件前添加的代理集必须已创建"
 
-msgid "Proxy Group"
-msgstr "添加到策略组（请勿重复添加）"
+msgid "Proxy Group (Support Regex)"
+msgstr "添加到策略组（请勿重复添加，支持正则匹配）"
 
 msgid "Set Proxy Group"
 msgstr "指定策略组"
@@ -1323,8 +1329,8 @@ msgstr "注意：如更新失败可手动下载并上传"
 msgid "Note: the client may not support update, because the firmware with squashfs format will not release flash space after updating"
 msgstr "注意：客户端可能无法更新，因为squashfs格式的固件更新后不会释放闪存空间"
 
-msgid "Compiled Version Selected"
-msgstr "已选择编译版本"
+msgid "Compiled Version Selected (Auto-save when you click to update or download)"
+msgstr "已选择编译版本（点击更新或下载时自动保存）"
 
 msgid "Release Branch Selected"
 msgstr "已选择更新分支"
@@ -1695,8 +1701,8 @@ msgstr "替换成功，检测到已启用节点筛选，开始挑选节点..."
 msgid "is Replaced Successfully, Start to Reserving..."
 msgstr "替换成功，检测到已启用保留配置，开始进行设置..."
 
-msgid "Config File Download Successful, Check If There is Any Update..."
-msgstr "配置文件下载成功，检查是否有更新..."
+msgid "Config File Test Successful, Check If There is Any Update..."
+msgstr "配置文件测试成功，检查是否有更新..."
 
 msgid "Are Updates, Start Replacing..."
 msgstr "有更新，开始替换..."
@@ -2622,6 +2628,9 @@ msgstr "提示：开始自动选择（检测）Bilibili 解锁节点..."
 msgid "Tip: Start Auto Select Proxy For Google Not CN Unlock..."
 msgstr "提示：开始自动选择（检测）Google 非送中节点..."
 
+msgid "Tip: Start Auto Select Proxy For ChatGPT Unlock..."
+msgstr "提示：开始自动选择（检测）ChatGPT 解锁节点..."
+
 msgid "Netflix Group:"
 msgstr "Netflix 策略组："
 
@@ -2660,6 +2669,9 @@ msgstr "Bilibili 策略组："
 
 msgid "Google Group:"
 msgstr "Google 策略组："
+
+msgid "ChatGPT Group:"
+msgstr "ChatGPT 策略组："
 
 msgid "full support"
 msgstr "完整解锁"
@@ -3378,8 +3390,32 @@ msgstr "提示：IPv6 代理模式为 TProxy..."
 msgid "Warning: Only Meta Core Support IPv6 Tun Mode, Use TProxy Instead..."
 msgstr "提示：只有 Meta 内核支持 IPv6 Tun 模式，使用 TProxy 模式代替..."
 
-msgid "Tip: Can't Get IPv4 WAN Interfaces, Please Verify The Firewall's WAN Zone Name is wan, Ignore This IF The Device Does not Have a WAN Interfaces..."
-msgstr "提示：无法获取 IPv4 的 WAN 接口名称，请确保防火墙设置中 IPv6 WAN 区域的名称为 wan，如设备无 WAN 口请忽略此提示..."
+msgid "Warning: Can't Settting Only Intranet Allowed Function, Get IPv4 WAN Interfaces error, Please Verify The Firewall's WAN Zone Name is wan, Ignore This IF The Device Does not Have a WAN Interfaces..."
+msgstr "警告：设置仅允许内网功能失败，无法获取 IPv4 的 WAN 接口名称，请确保防火墙设置中 IPv4 WAN 区域的名称为 wan，如设备无 WAN 口请忽略此提示..."
 
-msgid "Tip: Can't Get IPv6 WAN Interfaces, Please Verify The Firewall's WAN Zone Name is wan, Ignore This IF The Device Does not Have a WAN Interfaces..."
-msgstr "提示：无法获取 IPv6 的 WAN 接口名称，请确保防火墙设置中 IPv6 WAN 区域的名称为 wan，如设备无 WAN 口请忽略此提示..."
+msgid "Warning: Can't Settting Only Intranet Allowed Function, Get IPv6 WAN Interfaces error, Please Verify The Firewall's WAN Zone Name is wan, Ignore This IF The Device Does not Have a WAN Interfaces..."
+msgstr "警告：设置仅允许内网功能失败，无法获取 IPv6 的 WAN 接口名称，请确保防火墙设置中 IPv6 WAN 区域的名称为 wan，如设备无 WAN 口请忽略此提示..."
+
+msgid "Config File Download Successful, Test If There is Any Errors..."
+msgstr "配置文件下载成功，使用内核测试是否有错误..."
+
+msgid "configuration file"
+msgstr "配置文件"
+
+msgid "test failed"
+msgstr "测试失败..."
+
+msgid "test is successful"
+msgstr "测试成功..."
+
+msgid "Error: Config File Tested Faild, Please Check The Log Infos!"
+msgstr "错误：配置文件测试失败，请查看《内核日志》排查失败原因！"
+
+msgid "Test The Config File First..."
+msgstr "启动前调用内核测试配置文件..."
+
+msgid "Other Parameters"
+msgstr "其他附加配置"
+
+msgid "Edit Your Other Parameters Here"
+msgstr "请在此编辑您的附加配置"

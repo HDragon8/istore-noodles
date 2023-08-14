@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-04-02 19:35+0000\n"
-"Last-Translator: AHOHNMYC <lqwh2h2cwa@protonmail.com>\n"
+"PO-Revision-Date: 2023-05-18 23:53+0000\n"
+"Last-Translator: Alexey <agarkov.alexey.viktorovich@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/openwrt/"
 "luciapplicationsnft-qos/ru/>\n"
 "Language: ru\n"
@@ -9,7 +9,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 #: applications/luci-app-nft-qos/luasrc/view/nft-qos/rate.htm:136
 #: applications/luci-app-nft-qos/luasrc/view/nft-qos/rate.htm:155
@@ -21,7 +21,7 @@ msgstr "Всего байт"
 msgid "Collecting data..."
 msgstr "Сбор данных..."
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:229
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:225
 msgid "Comment"
 msgstr "Комментарий"
 
@@ -43,11 +43,11 @@ msgstr "Скорость отправки по умолчанию"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:67
 msgid "Default Upload Unit"
-msgstr "Единица загрузки по умолчанию"
+msgstr "Единица отправки по умолчанию"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:55
 msgid "Default unit for download rate"
-msgstr "Единица скорости скачивания по умолчанию"
+msgstr "Единица скорости загрузки по умолчанию"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:67
 msgid "Default unit for upload rate"
@@ -63,7 +63,7 @@ msgstr "Значение по умолчанию для скорости заг�
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:82
 msgid "Default value for upload bandwidth"
-msgstr "Значение по умолчанию для пропускной способности загрузки"
+msgstr "Значение по умолчанию для пропускной способности отправки"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:62
 msgid "Default value for upload rate"
@@ -73,7 +73,7 @@ msgstr "Значение по умолчанию для скорости отп�
 msgid "Download Bandwidth (Mbps)"
 msgstr "Скорость загрузки (Мбит/с)"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:252
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:248
 #: applications/luci-app-nft-qos/luasrc/view/nft-qos/rate.htm:135
 msgid "Download Rate"
 msgstr "Скорость загрузки"
@@ -97,7 +97,7 @@ msgstr "Предоставить UCI доступ для luci-app-nft-qos"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:130
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:163
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:244
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:240
 msgid "Hostname"
 msgstr "Имя хоста"
 
@@ -129,7 +129,7 @@ msgstr "Ограничение скорости по IP-адресу"
 msgid "Limit Rate by Mac Address"
 msgstr "Ограничение скорости по Mac-адресу"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:239
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:235
 msgid "Limit Traffic Rate By Mac Address"
 msgstr "Ограничение скорости трафика по Mac-адресу"
 
@@ -137,11 +137,7 @@ msgstr "Ограничение скорости трафика по Mac-адре
 msgid "Limit Type"
 msgstr "Тип лимита"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:177
-msgid "MAC (optional)"
-msgstr "MAC (необязательно)"
-
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:248
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:244
 msgid "MAC Address"
 msgstr "MAC-адрес"
 
@@ -176,11 +172,11 @@ msgstr "Нет доступной информации"
 msgid "Packets Total"
 msgstr "Всего пакетов"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:212
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:208
 msgid "Priority"
 msgstr "Приоритет"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:204
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:200
 msgid "Protocol"
 msgstr "Протокол"
 
@@ -191,7 +187,7 @@ msgstr "QoS через nftables"
 
 #: applications/luci-app-nft-qos/luasrc/controller/nft-qos.lua:13
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:144
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:181
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:177
 msgid "Rate"
 msgstr "Скорость"
 
@@ -207,7 +203,7 @@ msgstr "Скорость в реальном времени"
 msgid "Realtime Upload Rate"
 msgstr "Скорость отправки в реальном времени"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:226
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:222
 msgid "Service"
 msgstr "Служба"
 
@@ -217,7 +213,7 @@ msgstr "Статический QoS - Скорость загрузки"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:158
 msgid "Static QoS-Upload Rate"
-msgstr "Статический QoS - Скорость загрузки"
+msgstr "Статический QoS - Скорость отправки"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:87
 msgid "Target Network (IPv4/MASK)"
@@ -235,7 +231,7 @@ msgstr "На этой странице представлен обзор тек�
 msgid "Traffic Priority"
 msgstr "Приоритет трафика"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:199
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:195
 msgid "Traffic Priority Settings"
 msgstr "Настройки приоритета трафика"
 
@@ -244,29 +240,32 @@ msgid "Type of Limit Rate"
 msgstr "Тип ограничения скорости"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:149
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:186
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:257
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:268
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:182
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:253
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:264
 msgid "Unit"
 msgstr "узел"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:82
 msgid "Upload Bandwidth (Mbps)"
-msgstr "Скорость загрузки (Мбит/с)"
+msgstr "Скорость отправки(Мбит/с)"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:263
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:259
 #: applications/luci-app-nft-qos/luasrc/view/nft-qos/rate.htm:154
 msgid "Upload Rate"
-msgstr "Скорость загрузки"
+msgstr "Скорость отправки"
 
 #: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:98
 msgid "White List for Limit Rate"
 msgstr "Белый список для ограничения скорости"
 
-#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:226
+#: applications/luci-app-nft-qos/luasrc/model/cbi/nft-qos/nft-qos.lua:222
 msgid "e.g. https, 23, (separator is comma)"
 msgstr "например, https, 23, (разделитель - запятая)"
 
 #: applications/luci-app-nft-qos/luasrc/view/nft-qos/rate.htm:44
 msgid "kB"
 msgstr "кБ"
+
+#~ msgid "MAC (optional)"
+#~ msgstr "MAC (необязательно)"

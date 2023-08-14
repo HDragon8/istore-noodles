@@ -28,6 +28,7 @@ yml_set_custom_rule_provider()
    config_get "interval" "$section" "interval" ""
    config_get "group" "$section" "group" ""
    config_get "position" "$section" "position" ""
+   config_get "format" "$section" "format" ""
 
    if [ "$enabled" = "0" ]; then
       return
@@ -69,6 +70,11 @@ cat >> "$RULE_PROVIDER_FILE" <<-EOF
     behavior: $behavior
     path: $path
 EOF
+    if [ -n "$format" ]; then
+cat >> "$RULE_PROVIDER_FILE" <<-EOF
+    format: $format
+EOF
+    fi
     if [ "$type" = "http" ]; then
 cat >> "$RULE_PROVIDER_FILE" <<-EOF
     url: $url
@@ -115,7 +121,7 @@ yml_gen_rule_provider_file()
       RULE_PROVIDER_FILE_URL="https://raw.githubusercontent.com/${RULE_PROVIDER_FILE_URL_PATH}"
    else
       if [ "$github_address_mod" == "https://cdn.jsdelivr.net/" ] || [ "$github_address_mod" == "https://fastly.jsdelivr.net/" ] || [ "$github_address_mod" == "https://testingcf.jsdelivr.net/" ]; then
-         RULE_PROVIDER_FILE_URL="https://cdn.jsdelivr.net/gh/"$(echo "$RULE_PROVIDER_FILE_URL_PATH" |awk -F '/master' '{print $1}' 2>/dev/null)"@master"$(echo "$RULE_PROVIDER_FILE_URL_PATH" |awk -F 'master' '{print $2}')""
+         RULE_PROVIDER_FILE_URL="${github_address_mod}gh/"$(echo "$RULE_PROVIDER_FILE_URL_PATH" |awk -F '/master' '{print $1}' 2>/dev/null)"@master"$(echo "$RULE_PROVIDER_FILE_URL_PATH" |awk -F 'master' '{print $2}')""
       elif [ "$github_address_mod" == "https://raw.fastgit.org/" ]; then
          RULE_PROVIDER_FILE_URL="https://raw.fastgit.org/"$(echo "$RULE_PROVIDER_FILE_URL_PATH" |awk -F '/master' '{print $1}' 2>/dev/null)"/master"$(echo "$RULE_PROVIDER_FILE_URL_PATH" |awk -F 'master' '{print $2}')""
       else
@@ -136,7 +142,7 @@ cat >> "$RULE_PROVIDER_FILE" <<-EOF
 EOF
    if [ -z "$3" ]; then
 cat >> "$RULE_PROVIDER_FILE" <<-EOF
-    interval=86400
+    interval: 86400
 EOF
    else
 cat >> "$RULE_PROVIDER_FILE" <<-EOF
@@ -364,7 +370,7 @@ yml_other_set()
    
    begin
    Thread.new{
-      if $6 == 0 and ${10} != 2 then
+      if $6 == 0 and ${11} != 2 and '${13}' == 'fake-ip' then
          if Value.has_key?('rules') and not Value['rules'].to_a.empty? then
             if Value['rules'].to_a.grep(/(?=.*SRC-IP-CIDR,'${fake_ip}')/).empty? then
                Value['rules']=Value['rules'].to_a.insert(0,'SRC-IP-CIDR,${12},DIRECT');
@@ -795,7 +801,7 @@ yml_other_set()
             if '$github_address_mod' != '0' then
                if '$github_address_mod' == 'https://cdn.jsdelivr.net/' or '$github_address_mod' == 'https://fastly.jsdelivr.net/' or '$github_address_mod' == 'https://testingcf.jsdelivr.net/'then
                   if x['url'] and x['url'] =~ /^https:\/\/raw.githubusercontent.com/ then
-                     x['url'] = '$github_address_mod' + x['url'].split('/')[3] + '/' + x['url'].split('/')[4] + '@' + x['url'].split(x['url'].split('/')[2] + '/' + x['url'].split('/')[3] + '/' + x['url'].split('/')[4] + '/')[1];
+                     x['url'] = '$github_address_mod' + 'gh/' + x['url'].split('/')[3] + '/' + x['url'].split('/')[4] + '@' + x['url'].split(x['url'].split('/')[2] + '/' + x['url'].split('/')[3] + '/' + x['url'].split('/')[4] + '/')[1];
                   end;
                elsif '$github_address_mod' == 'https://raw.fastgit.org/' then
                   if x['url'] and x['url'] =~ /^https:\/\/raw.githubusercontent.com/ then
@@ -822,7 +828,7 @@ yml_other_set()
          Value['proxy-groups'].each{
             |x|
                if x['type'] == 'url-test' then
-                  x['tolerance']='${tolerance}';
+                  x['tolerance']=${tolerance};
                end
             };
       end;
@@ -839,7 +845,7 @@ yml_other_set()
             Value['proxy-groups'].each{
                |x|
                if x['type'] == 'url-test' or x['type'] == 'fallback' or x['type'] == 'load-balance' then
-                  x['interval']='${urltest_interval_mod}';
+                  x['interval']=${urltest_interval_mod};
                end
             };
          end;
@@ -847,7 +853,7 @@ yml_other_set()
             Value['proxy-providers'].values.each{
                |x|
                if x['health-check'] and x['health-check']['enable'] and x['health-check']['enable'] == 'true' then
-                  x['health-check']['interval']='${urltest_interval_mod}';
+                  x['health-check']['interval']=${urltest_interval_mod};
                end;
             };
          end;
@@ -933,6 +939,7 @@ yml_other_rules_get()
    config_get "DAZN" "$section" "DAZN" "$GlobalTV"
    config_get "ChatGPT" "$section" "ChatGPT" "$Proxy"
    config_get "AppleTV" "$section" "AppleTV" "$GlobalTV"
+   config_get "miHoYo" "$section" "miHoYo" "$Domestic"
 }
 
 if [ "$1" != "0" ]; then
@@ -944,14 +951,14 @@ if [ "$1" != "0" ]; then
    config_load "openclash"
    config_foreach yml_other_rules_get "other_rules" "$5"
    if [ -z "$rule_name" ]; then
-      yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}"
+      yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"
       exit 0
    #判断策略组是否存在
    elif [ "$rule_name" = "ConnersHua_return" ]; then
        if [ -z "$(grep -F "$Proxy" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Others" /tmp/Proxy_Group)" ];then
          LOG_OUT "Warning: Because of The Different Porxy-Group's Name, Stop Setting The Other Rules!"
-         yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}"
+         yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"
          exit 0
        fi
    elif [ "$rule_name" = "ConnersHua" ]; then
@@ -961,7 +968,7 @@ if [ "$1" != "0" ]; then
     || [ -z "$(grep -F "$Others" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Domestic" /tmp/Proxy_Group)" ]; then
          LOG_OUT "Warning: Because of The Different Porxy-Group's Name, Stop Setting The Other Rules!"
-         yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"  "${11}" "${12}"
+         yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"  "${11}" "${12}" "${13}"
          exit 0
        fi
    elif [ "$rule_name" = "lhie1" ]; then
@@ -984,6 +991,7 @@ if [ "$1" != "0" ]; then
     || [ -z "$(grep -F "$ChatGPT" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Spotify" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Steam" /tmp/Proxy_Group)" ]\
+    || [ -z "$(grep -F "$miHoYo" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$AdBlock" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Speedtest" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Telegram" /tmp/Proxy_Group)" ]\
@@ -995,13 +1003,13 @@ if [ "$1" != "0" ]; then
     || [ -z "$(grep -F "$GoogleFCM" /tmp/Proxy_Group)" ]\
     || [ -z "$(grep -F "$Domestic" /tmp/Proxy_Group)" ]; then
          LOG_OUT "Warning: Because of The Different Porxy-Group's Name, Stop Setting The Other Rules!"
-         yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}"
+         yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"
          exit 0
        fi
    fi
    if [ -z "$Proxy" ]; then
       LOG_OUT "Error: Missing Porxy-Group's Name, Stop Setting The Other Rules!"
-      yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}"
+      yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"
       exit 0
    else
       if [ "$rule_name" = "lhie1" ]; then
@@ -1044,6 +1052,7 @@ if [ "$1" != "0" ]; then
             .gsub(/,Spotify$/, ',$Spotify#delete_')
             .gsub(/,ChatGPT$/, ',$ChatGPT#delete_')
             .gsub(/,Steam$/, ',$Steam#delete_')
+            .gsub(/,miHoYo$/, ',$miHoYo#delete_')
             .gsub(/,AdBlock$/, ',$AdBlock#delete_')
             .gsub(/,Speedtest$/, ',$Speedtest#delete_')
             .gsub(/,Telegram$/, ',$Telegram#delete_')
@@ -1075,6 +1084,7 @@ if [ "$1" != "0" ]; then
             .gsub!(/: \"Spotify\"/,': \"$Spotify#delete_\"')
             .gsub!(/: \"ChatGPT\"/,': \"$ChatGPT#delete_\"')
             .gsub!(/: \"Steam\"/,': \"$Steam#delete_\"')
+            .gsub!(/: \"miHoYo\"/,': \"$miHoYo#delete_\"')
             .gsub!(/: \"AdBlock\"/,': \"$AdBlock#delete_\"')
             .gsub!(/: \"Speedtest\"/,': \"$Speedtest#delete_\"')
             .gsub!(/: \"Telegram\"/,': \"$Telegram#delete_\"')
@@ -1149,4 +1159,4 @@ if [ "$1" != "0" ]; then
    fi
 fi
 
-yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}"
+yml_other_set "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"

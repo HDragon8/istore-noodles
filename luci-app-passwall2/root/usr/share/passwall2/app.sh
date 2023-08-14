@@ -12,6 +12,7 @@ TMP_ID_PATH=$TMP_PATH/id
 TMP_PORT_PATH=$TMP_PATH/port
 TMP_ROUTE_PATH=$TMP_PATH/route
 TMP_ACL_PATH=$TMP_PATH/acl
+TMP_IFACE_PATH=$TMP_PATH/iface
 TMP_PATH2=/tmp/etc/${CONFIG}_tmp
 DNSMASQ_PATH=/etc/dnsmasq.d
 TMP_DNSMASQ_PATH=/tmp/dnsmasq.d/passwall2
@@ -21,7 +22,6 @@ RULES_PATH=/usr/share/${CONFIG}/rules
 TUN_DNS_PORT=15353
 TUN_DNS="127.0.0.1#${TUN_DNS_PORT}"
 DEFAULT_DNS=
-IFACES=
 ENABLED_DEFAULT_ACL=0
 ENABLED_ACLS=0
 PROXY_IPV6=0
@@ -31,6 +31,7 @@ UTIL_SS=$LUA_UTIL_PATH/util_shadowsocks.lua
 UTIL_XRAY=$LUA_UTIL_PATH/util_xray.lua
 UTIL_NAIVE=$LUA_UTIL_PATH/util_naiveproxy.lua
 UTIL_HYSTERIA=$LUA_UTIL_PATH/util_hysteria.lua
+UTIL_TUIC=$LUA_UTIL_PATH/util_tuic.lua
 V2RAY_ARGS=""
 V2RAY_CONFIG=""
 
@@ -53,6 +54,11 @@ config_t_get() {
 	local index=${4:-0}
 	local ret=$(uci -q get "${CONFIG}.@${1}[${index}].${2}" 2>/dev/null)
 	echo "${ret:=${3}}"
+}
+
+config_t_set() {
+	local index=${4:-0}
+	local ret=$(uci -q set "${CONFIG}.@${1}[${index}].${2}=${3}" 2>/dev/null)
 }
 
 get_enabled_anonymous_secs() {
@@ -195,6 +201,19 @@ check_port_exists() {
 	echo "${result}"
 }
 
+check_depends() {
+	local tables=${1}
+	if [ "$tables" == "iptables" ]; then
+		for depends in "iptables-mod-tproxy" "iptables-mod-socket" "iptables-mod-iprange" "iptables-mod-conntrack-extra" "kmod-ipt-nat"; do
+			[ -z "$(opkg status ${depends} 2>/dev/null | grep 'Status' | awk -F ': ' '{print $2}' 2>/dev/null)" ] && echolog "$tables透明代理基础依赖 $depends 未安装..."
+		done
+	else
+		for depends in "kmod-nft-socket" "kmod-nft-tproxy" "kmod-nft-nat"; do
+			[ -z "$(opkg status ${depends} 2>/dev/null | grep 'Status' | awk -F ': ' '{print $2}' 2>/dev/null)" ] && echolog "$tables透明代理基础依赖 $depends 未安装..."
+		done
+	fi
+}
+
 get_new_port() {
 	port=$1
 	[ "$port" == "auto" ] && port=2082
@@ -300,11 +319,6 @@ run_v2ray() {
 	local buffer_size=$(config_t_get global_forwarding buffer_size)
 	[ -n "${buffer_size}" ] && _extra_param="${_extra_param} -buffer_size ${buffer_size}"
 
-	local protocol=$(config_n_get $node protocol)
-	[ "$protocol" == "_iface" ] && {
-		IFACES="$IFACES $(config_n_get $node iface)"
-	}
-
 	[ -n "$dns_listen_port" ] && {
 		V2RAY_DNS_DIRECT_CONFIG="${TMP_PATH}/${flag}_dns_direct.json"
 		V2RAY_DNS_DIRECT_LOG="${TMP_PATH}/${flag}_dns_direct.log"
@@ -350,7 +364,18 @@ run_v2ray() {
 		ln_run "$(first_type $(config_t_get global_app ${type}_file) ${type})" ${type} $V2RAY_DNS_DIRECT_LOG run -c "$V2RAY_DNS_DIRECT_CONFIG"
 		
 		direct_dnsmasq_listen_port=$(get_new_port $(expr $dns_direct_listen_port + 1) udp)
-		run_direct_ipset_dnsmasq listen_port=${direct_dnsmasq_listen_port} server_dns=127.0.0.1#${dns_direct_listen_port} ipset=whitelist,whitelist6 config_file=$TMP_PATH/dnsmasq_${flag}_direct.conf
+		local set_flag="${flag}"
+		local direct_ipset_conf=$TMP_PATH/dnsmasq_${flag}_direct.conf
+		[ -n "$(echo ${flag} | grep '^acl')" ] && {
+			direct_ipset_conf=${TMP_ACL_PATH}/${sid}/dnsmasq_${flag}_direct.conf
+			set_flag=$(echo ${flag} | awk -F '_' '{print $2}')
+		}
+		if [ "${nftflag}" = "1" ]; then
+			local direct_nftset="4#inet#fw4#passwall2_${set_flag}_whitelist,6#inet#fw4#passwall2_${set_flag}_whitelist6"
+		else
+			local direct_ipset="passwall2_${set_flag}_whitelist,passwall2_${set_flag}_whitelist6"
+		fi
+		run_ipset_dnsmasq listen_port=${direct_dnsmasq_listen_port} server_dns=127.0.0.1#${dns_direct_listen_port} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
 
 		V2RAY_DNS_REMOTE_CONFIG="${TMP_PATH}/${flag}_dns_remote.json"
 		V2RAY_DNS_REMOTE_LOG="${TMP_PATH}/${flag}_dns_remote.log"
@@ -398,7 +423,7 @@ run_v2ray() {
 		_extra_param="${_extra_param} -dns_query_strategy UseIP"
 		_extra_param="${_extra_param} -direct_dns_port ${direct_dnsmasq_listen_port} -direct_dns_udp_server 127.0.0.1"
 		_extra_param="${_extra_param} -remote_dns_port ${dns_remote_listen_port} -remote_dns_udp_server 127.0.0.1"
-		[ "$remote_fakedns" = "1" ] && _extra_param="${_extra_param} -remote_dns_fake 1"
+		[ "$remote_fakedns" = "1" ] && _extra_param="${_extra_param} -remote_dns_fake 1 -remote_dns_fake_strategy ${remote_dns_query_strategy}"
 	}
 
 	lua $UTIL_XRAY gen_config -node $node -redir_port $redir_port -tcp_proxy_way $tcp_proxy_way -loglevel $loglevel ${_extra_param} > $config_file
@@ -505,6 +530,10 @@ run_socks() {
 		}
 		lua $UTIL_HYSTERIA gen_config -node $node -local_socks_port $socks_port -server_host $server_host -server_port $port ${_extra_param} > $config_file
 		ln_run "$(first_type $(config_t_get global_app hysteria_file))" "hysteria" $log_file -c "$config_file" client
+	;;
+	tuic)
+		lua $UTIL_TUIC gen_config -node $node -local_addr $bind -local_port $socks_port -server_host $server_host -server_port $port > $config_file
+		ln_run "$(first_type tuic-client)" "tuic-client" $log_file -c "$config_file"
 	;;
 	esac
 
@@ -641,7 +670,7 @@ run_global() {
 	echolog ${msg}
 
 	source $APP_PATH/helper_dnsmasq.sh stretch
-	source $APP_PATH/helper_dnsmasq.sh add TMP_DNSMASQ_PATH=$TMP_DNSMASQ_PATH DNSMASQ_CONF_FILE=/tmp/dnsmasq.d/dnsmasq-passwall2.conf DEFAULT_DNS=$AUTO_DNS LOCAL_DNS=$LOCAL_DNS TUN_DNS=$TUN_DNS
+	source $APP_PATH/helper_dnsmasq.sh add TMP_DNSMASQ_PATH=$TMP_DNSMASQ_PATH DNSMASQ_CONF_FILE=/tmp/dnsmasq.d/dnsmasq-passwall2.conf DEFAULT_DNS=$AUTO_DNS LOCAL_DNS=$LOCAL_DNS TUN_DNS=$TUN_DNS NFTFLAG=${nftflag:-0}
 
 	V2RAY_CONFIG=$TMP_PATH/global.json
 	V2RAY_LOG=$TMP_PATH/global.log
@@ -776,12 +805,61 @@ stop_crontab() {
 	#echolog "清除定时执行命令。"
 }
 
-run_direct_ipset_dnsmasq() {
-	local listen_port server_dns ipset config_file
+add_ip2route() {
+	local ip=$(get_host_ip "ipv4" $1)
+	[ -z "$ip" ] && {
+		echolog "  - 无法解析[${1}]，路由表添加失败！"
+		return 1
+	}
+	local remarks="${1}"
+	[ "$remarks" != "$ip" ] && remarks="${1}(${ip})"
+
+	. /lib/functions/network.sh
+	local gateway device
+	network_get_gateway gateway "$2"
+	network_get_device device "$2"
+	[ -z "${device}" ] && device="$2"
+
+	if [ -n "${gateway}" ]; then
+		route add -host ${ip} gw ${gateway} dev ${device} >/dev/null 2>&1
+		echo "$ip" >> $TMP_ROUTE_PATH/${device}
+		echolog "  - [${remarks}]添加到接口[${device}]路由表成功！"
+	else
+		echolog "  - [${remarks}]添加到接口[${device}]路由表失功！原因是找不到[${device}]网关。"
+	fi
+}
+
+delete_ip2route() {
+	[ -d "${TMP_ROUTE_PATH}" ] && {
+		for interface in $(ls ${TMP_ROUTE_PATH}); do
+			for ip in $(cat ${TMP_ROUTE_PATH}/${interface}); do
+				route del -host ${ip} dev ${interface} >/dev/null 2>&1
+			done
+		done
+	}
+}
+
+start_haproxy() {
+	[ "$(config_t_get global_haproxy balancing_enable 0)" != "1" ] && return
+	haproxy_path=${TMP_PATH}/haproxy
+	haproxy_conf="config.cfg"
+	lua $APP_PATH/haproxy.lua -path ${haproxy_path} -conf ${haproxy_conf} -dns ${LOCAL_DNS}
+	ln_run "$(first_type haproxy)" haproxy "/dev/null" -f "${haproxy_path}/${haproxy_conf}"
+}
+
+run_ipset_dnsmasq() {
+	local listen_port server_dns ipset nftset cache_size dns_forward_max config_file
 	eval_set_val $@
-	echo "port=${listen_port}" >> $config_file
-	echo "server=${server_dns}" >> $config_file
-	echo "ipset=${ipset}" >> $config_file
+	cat <<-EOF > $config_file
+		port=${listen_port}
+		server=${server_dns}
+		no-poll
+		no-resolv
+		cache-size=${cache_size:-0}
+		dns-forward-max=${dns_forward_max:-1000}
+	EOF
+	[ -n "${ipset}" ] && echo "ipset=${ipset}" >> $config_file
+	[ -n "${nftset}" ] && echo "nftset=${nftset}" >> $config_file
 	ln_run "$(first_type dnsmasq)" "dnsmasq" "/dev/null" -C $config_file
 }
 
@@ -799,7 +877,6 @@ acl_app() {
 		redir_port=11200
 		dns_port=11300
 		dnsmasq_port=11400
-		echolog "访问控制："
 		for item in $items; do
 			index=$(expr $index + 1)
 			local enabled sid remarks sources node direct_dns_protocol direct_dns direct_dns_doh direct_dns_client_ip direct_dns_query_strategy remote_dns_protocol remote_dns remote_dns_doh remote_dns_client_ip remote_fakedns remote_dns_query_strategy
@@ -831,7 +908,7 @@ acl_app() {
 			tcp_proxy_mode="global"
 			udp_proxy_mode="global"
 			node=${node:-default}
-			direct_dns_protocol=${direct_dns_protocol:-auto}
+			direct_dns_protocol="auto"
 			direct_dns=${direct_dns:-119.29.29.29}
 			[ "$direct_dns_protocol" = "doh" ] && direct_dns=${direct_dns_doh:-https://223.5.5.5/dns-query}
 			direct_dns_query_strategy=${direct_dns_query_strategy:-UseIP}
@@ -878,7 +955,7 @@ acl_app() {
 							echo "server=127.0.0.1#${dns_port}" >> $TMP_ACL_PATH/$sid/dnsmasq.conf
 							echo "no-poll" >> $TMP_ACL_PATH/$sid/dnsmasq.conf
 							echo "no-resolv" >> $TMP_ACL_PATH/$sid/dnsmasq.conf
-							#source $APP_PATH/helper_dnsmasq.sh add TMP_DNSMASQ_PATH=$TMP_ACL_PATH/$sid/dnsmasq.d DNSMASQ_CONF_FILE=/dev/null DEFAULT_DNS=$AUTO_DNS TUN_DNS=127.0.0.1#${dns_port} NO_LOGIC_LOG=1
+							#source $APP_PATH/helper_dnsmasq.sh add TMP_DNSMASQ_PATH=$TMP_ACL_PATH/$sid/dnsmasq.d DNSMASQ_CONF_FILE=/dev/null DEFAULT_DNS=$AUTO_DNS TUN_DNS=127.0.0.1#${dns_port} NFTFLAG=${nftflag:-0} NO_LOGIC_LOG=1
 							ln_run "$(first_type dnsmasq)" "dnsmasq_${sid}" "/dev/null" -C $TMP_ACL_PATH/$sid/dnsmasq.conf -x $TMP_ACL_PATH/$sid/dnsmasq.pid
 							eval node_${node}_$(echo -n "${tcp_proxy_mode}${remote_dns}" | md5sum | cut -d " " -f1)=${dnsmasq_port}
 							filter_node $node TCP > /dev/null 2>&1 &
@@ -905,15 +982,38 @@ start() {
 	}
 
 	ulimit -n 65535
+	start_haproxy
 	start_socks
-
-	local USE_TABLES="iptables"
-	if [ -z "$(command -v iptables-legacy || command -v iptables)" ] || [ -z "$(command -v ipset)" ] || [ -z "$(dnsmasq --version | grep 'Compile time options:.* ipset')" ]; then
-		echolog "系统未安装iptables或ipset或Dnsmasq没有开启ipset支持，无法透明代理！"
+	nftflag=0
+	local use_nft=$(config_t_get global_forwarding use_nft 0)
+	local USE_TABLES
+	if [ "$use_nft" == 0 ]; then
+		if [ -z "$(command -v iptables-legacy || command -v iptables)" ] || [ -z "$(command -v ipset)" ] || [ -z "$(dnsmasq --version | grep 'Compile time options:.* ipset')" ]; then
+			if [ -n "$(command -v nft)" ] && [ -n "$(dnsmasq --version | grep 'Compile time options:.* nftset')" ]; then
+				echolog "检测到fw4，使用nftables进行透明代理。"
+				USE_TABLES="nftables"
+				nftflag=1
+				config_t_set global_forwarding use_nft 1
+				uci commit
+			else
+				echolog "系统未安装iptables或ipset或Dnsmasq没有开启ipset支持，无法透明代理！"
+			fi
+		else
+			USE_TABLES="iptables"
+		fi
+	else
+		if [ -z "$(dnsmasq --version | grep 'Compile time options:.* nftset')" ]; then
+			echolog "Dnsmasq软件包不满足nftables透明代理要求，如需使用请确保dnsmasq版本在2.87以上并开启nftset支持。"
+		elif [ -n "$(dnsmasq --version | grep 'Compile time options:.* nftset')" ]; then
+			USE_TABLES="nftables"
+			nftflag=1
+		fi
 	fi
 
+	check_depends $USE_TABLES
+
 	[ "$ENABLED_DEFAULT_ACL" == 1 ] && run_global
-	source $APP_PATH/${USE_TABLES}.sh start
+	[ -n "$USE_TABLES" ] && source $APP_PATH/${USE_TABLES}.sh start
 	[ "$ENABLED_DEFAULT_ACL" == 1 ] && source $APP_PATH/helper_dnsmasq.sh logic_restart
 	if [ "$ENABLED_DEFAULT_ACL" == 1 ] || [ "$ENABLED_ACLS" == 1 ]; then
 		bridge_nf_ipt=$(sysctl -e -n net.bridge.bridge-nf-call-iptables)
@@ -931,7 +1031,9 @@ start() {
 
 stop() {
 	clean_log
-	source $APP_PATH/iptables.sh stop
+	[ -n "$($(source $APP_PATH/iptables.sh get_ipt_bin) -t mangle -t nat -L -nv 2>/dev/null | grep "PSW2")" ] && source $APP_PATH/iptables.sh stop
+	[ -n "$(nft list sets 2>/dev/null | grep "${CONFIG}_")" ] && source $APP_PATH/nftables.sh stop
+	delete_ip2route
 	kill_all v2ray-plugin obfs-local
 	pgrep -f "sleep.*(6s|9s|58s)" | xargs kill -9 >/dev/null 2>&1
 	pgrep -af "${CONFIG}/" | awk '! /app\.sh|subscribe\.lua|rule_update\.lua/{print $1}' | xargs kill -9 >/dev/null 2>&1
@@ -968,6 +1070,7 @@ TCP_PROXY_MODE="global"
 UDP_PROXY_MODE="global"
 LOCALHOST_PROXY=$(config_t_get global localhost_proxy '1')
 DIRECT_DNS_PROTOCOL=$(config_t_get global direct_dns_protocol tcp)
+DIRECT_DNS_PROTOCOL="auto"
 DIRECT_DNS=$(config_t_get global direct_dns 119.29.29.29:53 | sed 's/#/:/g' | sed -E 's/\:([^:]+)$/#\1/g')
 DIRECT_DNS_QUERY_STRATEGY=$(config_t_get global direct_dns_query_strategy UseIP)
 REMOTE_DNS_PROTOCOL=$(config_t_get global remote_dns_protocol tcp)
@@ -990,11 +1093,14 @@ PROXY_IPV6=$(config_t_get global_forwarding ipv6_tproxy 0)
 
 export V2RAY_LOCATION_ASSET=$(config_t_get global_rules v2ray_location_asset "/usr/share/v2ray/")
 export XRAY_LOCATION_ASSET=$V2RAY_LOCATION_ASSET
-mkdir -p /tmp/etc $TMP_PATH $TMP_BIN_PATH $TMP_SCRIPT_FUNC_PATH $TMP_ID_PATH $TMP_PORT_PATH $TMP_ROUTE_PATH $TMP_ACL_PATH $TMP_PATH2
+mkdir -p /tmp/etc $TMP_PATH $TMP_BIN_PATH $TMP_SCRIPT_FUNC_PATH $TMP_ID_PATH $TMP_PORT_PATH $TMP_ROUTE_PATH $TMP_ACL_PATH $TMP_IFACE_PATH $TMP_PATH2
 
 arg1=$1
 shift
 case $arg1 in
+add_ip2route)
+	add_ip2route $@
+	;;
 get_new_port)
 	get_new_port $@
 	;;
