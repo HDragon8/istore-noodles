@@ -93,7 +93,7 @@ git clone --depth 1 https://github.com/Huangjoe123/luci-app-eqos
 git clone --depth 1 https://github.com/sirpdboy/luci-app-lucky
 #git clone --depth 1 https://github.com/sirpdboy/luci-app-lucky lucik && mv -n lucik/luci-app-lucky ./ ; rm -rf lucik
 git clone --depth 1 https://github.com/Hyy2001X/AutoBuild-Packages && rm -rf AutoBuild-Packages/luci-app-adguardhome && mvdir AutoBuild-Packages
-git clone --depth 1 https://github.com/sirpdboy/luci-app-ddns-go ddns-go && mvdir ddns-go
+git clone --depth 1 https://github.com/sirpdboy/luci-app-ddns-go ddns-go1 && mvdir ddns-go1
 #git_clone https://github.com/sirpdboy/netspeedtest && mv -n netspeedtest/luci-app-netspeedtest ./ ; rm -rf netspeedtest
 git clone --depth 1 https://github.com/sirpdboy/netspeedtest && mvdir netspeedtest
 git clone --depth 1 https://github.com/HDragon8/add_openwrt_Build_name
@@ -143,6 +143,7 @@ svn export https://github.com/immortalwrt/packages/trunk/net/gowebdav
 #svn export https://github.com/immortalwrt/luci/trunk/applications/luci-app-firewall
 #svn export https://github.com/immortalwrt/immortalwrt/trunk/target/linux/generic/hack-5.10/952-net-conntrack-events-support-multiple-registrant.patch
 #svn export https://github.com/istoreos/istoreos/trunk/package/istoreos-files
+svn export https://github.com/sirpdboy/luci-app-ddns-go/trunk/ddns-go
 #kiddin9's packages
 
 git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system
