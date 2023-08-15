@@ -16,7 +16,7 @@ function mvdir() {
 mv -n `find $1/* -maxdepth 0 -type d` ./
 rm -rf $1
 }
-#git clone --depth 1 https://github.com/HDragon8/A-default-settings A-default-settings
+git clone --depth 1 https://github.com/HDragon8/A-default-settings A-default-settings
 git clone --depth 1 https://github.com/kiddin9/luci-theme-edge
 git clone --depth 1 https://github.com/kiddin9/openwrt-amule-dlp && mvdir openwrt-amule-dlp
 #git clone --depth 1 https://github.com/yichya/luci-app-xray
@@ -207,6 +207,8 @@ rm -rf r8125
 rm -rf r8168
 rm -rf rtl88x2bu
 rm -rf shellsync
+rm -rf luci-app-daed
+rm -rf luci-app-keepalived
 #移动luci-base、luci-mod-status、luci-mod-system到A-model文件夹
 mkdir A-model
 mv -f luci-base A-model/luci-base
