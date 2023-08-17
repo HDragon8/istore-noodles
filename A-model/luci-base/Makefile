@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Jo-Philipp Wich <jo@mein.io>
+# Copyright (C) 2008-2015 The LuCI Team <luci@lists.subsignal.org>
 #
 # This is free software, licensed under the Apache License, Version 2.0 .
 #
@@ -11,20 +11,8 @@ PKG_NAME:=luci-base
 LUCI_TYPE:=mod
 LUCI_BASENAME:=base
 
-LUCI_TITLE:=LuCI core runtime
-LUCI_DEPENDS:=\
-	+rpcd \
-	+rpcd-mod-file \
-	+rpcd-mod-luci \
-	+rpcd-mod-ucode \
-	+cgi-io \
-	+ucode \
-	+ucode-mod-fs \
-	+ucode-mod-uci \
-	+ucode-mod-ubus \
-	+ucode-mod-math \
-	+ucode-mod-html \
-	+liblucihttp-ucode
+LUCI_TITLE:=LuCI core libraries
+LUCI_DEPENDS:=+lua +libuci-lua +luci-lib-nixio +luci-lib-ip +rpcd +libubus-lua +luci-lib-jsonc +liblucihttp-lua +luci-lib-base +rpcd-mod-file +rpcd-mod-luci +cgi-io +@LUCI_LANG_zh_Hans
 
 PKG_LICENSE:=MIT
 
@@ -38,21 +26,7 @@ define Package/luci-base/conffiles
 /etc/config/ucitrack
 endef
 
-define Package/luci-base/postinst
-#!/bin/sh
-
-if [ -z "$${PKG_INSTROOT}" ] && [ -f /etc/config/uhttpd ]; then
-	if ! uci -q get uhttpd.main.ucode_prefix | grep -sq /cgi-bin/luci; then
-		uci add_list uhttpd.main.ucode_prefix='/cgi-bin/luci=/usr/share/ucode/luci/uhttpd.uc'
-		uci commit uhttpd
-		service uhttpd reload
-	fi
-fi
-
-exit 0
-endef
-
-include $(TOPDIR)/feeds/luci/luci.mk
+include ../../luci.mk
 
 define Host/Configure
 endef

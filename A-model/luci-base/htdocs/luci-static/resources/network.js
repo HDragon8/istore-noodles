@@ -3396,14 +3396,13 @@ WifiDevice = baseclass.extend(/** @lends LuCI.network.WifiDevice.prototype */ {
 	getI18n: function() {
 		var hw = this.ubus('dev', 'iwinfo', 'hardware'),
 		    type = L.isObject(hw) ? hw.name : null;
-		var modes = this.ubus('dev', 'iwinfo', 'hwmodes_text');
 
 		if (this.ubus('dev', 'iwinfo', 'type') == 'wl')
 			type = 'Broadcom';
 
-		return '%s %s Wireless Controller (%s)'.format(
+		return '%s 802.11%s Wireless Controller (%s)'.format(
 			type || 'Generic',
-			modes ? '802.11' + modes : 'unknown',
+			this.getHWModes().sort(L.naturalCompare).join(''),
 			this.getName());
 	},
 
@@ -4377,11 +4376,5 @@ WifiNetwork = baseclass.extend(/** @lends LuCI.network.WifiNetwork.prototype */ 
 		})(mac, deauth, reason, ban_time);
 	}
 });
-
-setTimeout(function(){
-try{
-  document.getElementsByClassName('cbi-button-apply')[0].children[3].children[0].value='1'
-}catch(err) {
-}},1000)
 
 return Network;

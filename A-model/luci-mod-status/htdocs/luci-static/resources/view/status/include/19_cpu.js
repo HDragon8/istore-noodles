@@ -1,9 +1,10 @@
 'use strict';
+'require baseclass';
 'require rpc';
 
 var callCPUFreeInfo = rpc.declare({
 	object: 'luci',
-	method: 'getCPUUsage'
+	method: 'getCPUFree'
 });
 
 function progressbar(value, max) {
@@ -26,10 +27,11 @@ return L.Class.extend({
 
 	render: function(info) {
 		var fields = [
-			_('Used'), (info.cpuusage) ? info.cpuusage : 0, 100
+			_('Total Available'), (info.result) ? info.result : 0, 100,
+			_('Used'),            (info.result) ? 100 - info.result : 0, 100,
 		];
 
-		var table = E('div', { 'class': 'table cpu' });
+		var table = E('div', { 'class': 'table' });
 
 		for (var i = 0; i < fields.length; i += 3) {
 			table.appendChild(E('div', { 'class': 'tr' }, [
