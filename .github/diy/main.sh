@@ -145,9 +145,11 @@ svn export https://github.com/immortalwrt/packages/trunk/net/gowebdav
 #svn export https://github.com/istoreos/istoreos/trunk/package/istoreos-files
 svn export https://github.com/sirpdboy/luci-app-ddns-go/trunk/ddns-go
 #kiddin9's packages
-
-git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system
+#git_sparse_clone master "https://github.com/kiddin9/openwrt-packages" "kinddin9" autocore luci-base luci-mod-status luci-mod-system
 #firewall firewall4 luci-app-firewall
+#Lienol's packages
+git_sparse_clone other "https://github.com/Lienol/openwrt-package" "Lienol8" lean/autocore
+git_sparse_clone 22.03 "https://github.com/Lienol/openwrt-luci" "Lienol7" modules/luci-base modules/luci-mod-status modules/luci-mod-system
 
 rm -rf luci-app-netdata
 
