@@ -17,6 +17,7 @@ mv -n `find $1/* -maxdepth 0 -type d` ./
 rm -rf $1
 }
 git clone --depth 1 https://github.com/HDragon8/A-default-settings A-default-settings
+git clone --depth 1 https://github.com/HDragon8/iS-default-settings iS-default-settings
 git clone --depth 1 https://github.com/kiddin9/luci-theme-edge
 git clone --depth 1 https://github.com/kiddin9/openwrt-amule-dlp && mvdir openwrt-amule-dlp
 #git clone --depth 1 https://github.com/yichya/luci-app-xray
@@ -42,7 +43,8 @@ git clone --depth 1 https://github.com/NateLol/luci-app-beardropper
 git clone --depth 1 https://github.com/yaof2/luci-app-ikoolproxy
 git clone --depth 1 https://github.com/project-lede/luci-app-godproxy
 git clone --depth 1 https://github.com/sbwml/openwrt-alist && mvdir openwrt-alist
-git clone --depth 1 https://github.com/tty228/luci-app-serverchan
+#git clone --depth 1 https://github.com/tty228/luci-app-serverchan
+git clone --depth 1 https://github.com/tty228/luci-app-wechatpush
 git clone --depth 1 https://github.com/4IceG/luci-app-sms-tool smstool && mvdir smstool
 git clone --depth 1 https://github.com/shanglanxin/luci-app-homebridge
 git clone --depth 1 https://github.com/esirplayground/luci-app-poweroff
