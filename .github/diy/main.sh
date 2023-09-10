@@ -50,7 +50,7 @@ git clone --depth 1 https://github.com/shanglanxin/luci-app-homebridge
 git clone --depth 1 https://github.com/esirplayground/luci-app-poweroff
 git clone --depth 1 https://github.com/jerrykuku/luci-app-vssr
 git clone --depth 1 https://github.com/jerrykuku/luci-app-ttnode
-git clone --depth 1 https://github.com/jerrykuku/luci-app-jd-dailybonus
+#git clone --depth 1 https://github.com/jerrykuku/luci-app-jd-dailybonus
 git clone --depth 1 https://github.com/jerrykuku/luci-app-go-aliyundrive-webdav
 git clone --depth 1 https://github.com/sirpdboy/luci-app-advanced
 git clone --depth 1 https://github.com/sirpdboy/luci-theme-opentopd
@@ -167,7 +167,7 @@ net/uugamebooster net/verysync net/vlmcsd net/dnsforwarder net/nps net/tcpping n
 #mv -f miniupnpd miniupnpd-iptables
 
 git_sparse_clone master "https://github.com/immortalwrt/packages" "immpkgs" net/mwol \
-net/sub-web net/dnsproxy net/haproxy net/v2raya net/cdnspeedtest net/keepalived \
+net/sub-web net/dnsproxy net/haproxy net/v2raya net/cdnspeedtest net/keepalived net/adblock-fast \
 net/subconverter net/ngrokc net/oscam net/njitclient net/scutclient net/gost net/gowebdav \
 libs/jpcre2 libs/wxbase libs/rapidjson libs/libcron libs/quickjspp libs/toml11 \
 utils/cpulimit utils/filebrowser utils/cups net/udp2raw net/msd_lite net/xfrpc net/bitsrunlogin-go \
