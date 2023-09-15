@@ -216,9 +216,9 @@ function gen_outbound(flag, node, tag, proxy_table)
 			protocol_table = {
 				uuid = node.uuid,
 				security = node.security,
-				alter_id = 0,
-				global_padding = false,
-				authenticated_length = true,
+				alter_id = (node.alter_id) and tonumber(node.alter_id) or 0,
+				global_padding = (node.global_padding == "1") and true or false,
+				authenticated_length = (node.authenticated_length == "1") and true or false,
 				tls = tls,
 				packet_encoding = "", --UDP 包编码。(空)：禁用	packetaddr：由 v2ray 5+ 支持	xudp：由 xray 支持
 				multiplex = mux,
@@ -347,13 +347,25 @@ function gen_config_server(node)
 		{ type = "block", tag = "block" }
 	}
 
-	local tls = nil
+	local tls = {
+		enabled = true,
+		certificate_path = node.tls_certificateFile,
+		key_path = node.tls_keyFile,
+	}
 
-	if node.tls == "1" then
-		tls = {
+	if node.tls == "1" and node.reality == "1" then
+		tls.certificate_path = nil
+		tls.key_path = nil
+		tls.reality = {
 			enabled = true,
-			certificate_path = node.tls_certificateFile,
-			key_path = node.tls_keyFile,
+			private_key = node.reality_private_key,
+			short_id = {
+				node.reality_shortId
+			},
+			handshake = {
+				server = node.reality_handshake_server,
+				server_port = tonumber(node.reality_handshake_server_port)
+			}
 		}
 	end
 
@@ -430,7 +442,7 @@ function gen_config_server(node)
 					password = node.password
 				}
 			} or nil,
-			tls = tls,
+			tls = (node.tls == "1") and tls or nil,
 		}
 	end
 
@@ -453,7 +465,7 @@ function gen_config_server(node)
 			end
 			protocol_table = {
 				users = users,
-				tls = tls,
+				tls = (node.tls == "1") and tls or nil,
 				transport = v2ray_transport,
 			}
 		end
@@ -471,7 +483,7 @@ function gen_config_server(node)
 			end
 			protocol_table = {
 				users = users,
-				tls = tls,
+				tls = (node.tls == "1") and tls or nil,
 				transport = v2ray_transport,
 			}
 		end
@@ -483,12 +495,12 @@ function gen_config_server(node)
 			for i = 1, #node.uuid do
 				users[i] = {
 					name = node.uuid[i],
-					uuid = node.uuid[i],
+					password = node.uuid[i],
 				}
 			end
 			protocol_table = {
 				users = users,
-				tls = tls,
+				tls = (node.tls == "1") and tls or nil,
 				fallback = nil,
 				fallback_for_alpn = nil,
 				transport = v2ray_transport,
@@ -509,6 +521,9 @@ function gen_config_server(node)
 	end
 
 	if node.protocol == "hysteria" then
+		tls.alpn = (node.hysteria_alpn and node.hysteria_alpn ~= "") and {
+			node.hysteria_alpn
+		} or nil
 		protocol_table = {
 			up = node.hysteria_up_mbps .. " Mbps",
 			down = node.hysteria_down_mbps .. " Mbps",
@@ -526,18 +541,14 @@ function gen_config_server(node)
 			recv_window_client = node.hysteria_recv_window_client and tonumber(node.hysteria_recv_window_client) or nil,
 			max_conn_client = node.hysteria_max_conn_client and tonumber(node.hysteria_max_conn_client) or nil,
 			disable_mtu_discovery = (node.hysteria_disable_mtu_discovery == "1") and true or false,
-			tls = {
-				enabled = true,
-				certificate_path = node.tls_certificateFile,
-				key_path = node.tls_keyFile,
-				alpn = (node.hysteria_alpn and node.hysteria_alpn ~= "") and {
-					node.hysteria_alpn
-				} or nil
-			}
+			tls = tls
 		}
 	end
 
 	if node.protocol == "tuic" then
+		tls.alpn = (node.tuic_alpn and node.tuic_alpn ~= "") and {
+			node.tuic_alpn
+		} or nil
 		protocol_table = {
 			users = {
 				{
@@ -549,14 +560,7 @@ function gen_config_server(node)
 			congestion_control = node.tuic_congestion_control or "cubic",
 			zero_rtt_handshake = (node.tuic_zero_rtt_handshake == "1") and true or false,
 			heartbeat = node.tuic_heartbeat .. "s",
-			tls = {
-				enabled = true,
-				certificate_path = node.tls_certificateFile,
-				key_path = node.tls_keyFile,
-				alpn = (node.tuic_alpn and node.tuic_alpn ~= "") and {
-					node.tuic_alpn
-				} or nil,
-			},
+			tls = tls
 		}
 	end
 
@@ -575,11 +579,7 @@ function gen_config_server(node)
 				}
 			},
 			ignore_client_bandwidth = (node.hysteria2_ignore_client_bandwidth == "1") and true or false,
-			tls = {
-				enabled = true,
-				certificate_path = node.tls_certificateFile,
-				key_path = node.tls_keyFile,
-			},
+			tls = tls
 		}
 	end
 
@@ -1100,109 +1100,104 @@ function gen_config(var)
 			reverse_mapping = true, --在响应 DNS 查询后存储 IP 地址的反向映射以为路由目的提供域名。
 			fakeip = nil,
 		}
-	
-		if true then
-			local dns_tag = "remote"
-	
-			local domain = {}
-			local domain_suffix = {}
-			local domain_keyword = {}
-			local domain_regex = {}
-			local geosite = {}
-			for index, value in ipairs(dns_remote_domains) do
-				if value:find("geosite:") == 1 then
-					table.insert(geosite, value:sub(1 + #"geosite:"))
-				elseif value:find("regexp:") == 1 then
-					table.insert(domain_regex, value:sub(1 + #"regexp:"))
-				elseif value:find("full:") == 1 then
-					table.insert(domain, value:sub(1 + #"full:"))
-				elseif value:find("domain:") == 1 then
-					table.insert(domain_keyword, value:sub(1 + #"domain:"))
-				else
-					table.insert(domain, value)
-				end
+
+		local dns_tag = "remote"
+
+		local domain = {}
+		local domain_suffix = {}
+		local domain_keyword = {}
+		local domain_regex = {}
+		local geosite = {}
+		for index, value in ipairs(dns_remote_domains) do
+			if value:find("geosite:") == 1 then
+				table.insert(geosite, value:sub(1 + #"geosite:"))
+			elseif value:find("regexp:") == 1 then
+				table.insert(domain_regex, value:sub(1 + #"regexp:"))
+			elseif value:find("full:") == 1 then
+				table.insert(domain, value:sub(1 + #"full:"))
+			elseif value:find("domain:") == 1 then
+				table.insert(domain_keyword, value:sub(1 + #"domain:"))
+			else
+				table.insert(domain, value)
 			end
-			local remote_rule = {
-				server = dns_tag,
-				domain = #domain > 0 and domain or nil,
-				domain_suffix = #domain_suffix > 0 and domain_suffix or nil,
-				domain_keyword = #domain_keyword > 0 and domain_keyword or nil,
-				domain_regex = #domain_regex > 0 and domain_regex or nil,
-				geosite = #geosite > 0 and geosite or nil,
-				disable_cache = true,
+		end
+		local remote_rule = {
+			server = dns_tag,
+			domain = #domain > 0 and domain or nil,
+			domain_suffix = #domain_suffix > 0 and domain_suffix or nil,
+			domain_keyword = #domain_keyword > 0 and domain_keyword or nil,
+			domain_regex = #domain_regex > 0 and domain_regex or nil,
+			geosite = #geosite > 0 and geosite or nil,
+			disable_cache = true,
+		}
+
+		local remote_strategy = "prefer_ipv6"
+		if remote_dns_query_strategy == "UseIPv4" then
+			remote_strategy = "ipv4_only"
+		elseif remote_dns_query_strategy == "UseIPv6" then
+			remote_strategy = "ipv6_only"
+		end
+
+		local server = {
+			tag = dns_tag,
+			address_strategy = "prefer_ipv4",
+			strategy = remote_strategy,
+			address_resolver = "direct",
+			detour = dns_outTag,
+		}
+
+		if remote_dns_udp_server then
+			local server_port = tonumber(remote_dns_port) or 53
+			server.address = "udp://" .. remote_dns_udp_server .. ":" .. server_port
+		end
+
+		if remote_dns_tcp_server then
+			server.address = remote_dns_tcp_server
+		end
+
+		if remote_dns_doh_url and remote_dns_doh_host then
+			server.address = remote_dns_doh_url
+		end
+
+		if server.address then
+			table.insert(dns.servers, server)
+		end
+
+		local fakedns_tag = dns_tag .. "_fakeip"
+		if remote_dns_fake then
+			dns.fakeip = {
+				enabled = true,
+				inet4_range = "198.18.0.0/16",
+				inet6_range = "fc00::/18",
 			}
-	
-			local remote_strategy = "prefer_ipv6"
-			if remote_dns_query_strategy == "UseIPv4" then
-				remote_strategy = "ipv4_only"
-			elseif remote_dns_query_strategy == "UseIPv6" then
-				remote_strategy = "ipv6_only"
-			end
-	
-			local server = {
-				tag = dns_tag,
-				address_strategy = "prefer_ipv4",
+			
+			table.insert(dns.servers, {
+				tag = fakedns_tag,
+				address = "fakeip",
 				strategy = remote_strategy,
-				address_resolver = "direct",
-				detour = dns_outTag,
-			}
-	
-			local rule_server = dns_tag
-	
-			if remote_dns_udp_server then
-				local server_port = tonumber(remote_dns_port) or 53
-				server.address = "udp://" .. remote_dns_udp_server .. ":" .. server_port
-			end
-	
-			if remote_dns_tcp_server then
-				server.address = remote_dns_tcp_server
-			end
-	
-			if remote_dns_doh_url and remote_dns_doh_host then
-				server.address = remote_dns_doh_url
-			end
-	
-			if server.address then
-				table.insert(dns.servers, server)
-			end
-	
-			if remote_dns_fake then
-				dns.fakeip = {
-					enabled = true,
-					inet4_range = "198.18.0.0/16",
-					inet6_range = "fc00::/18",
+			})
+
+			if tags and tags:find("with_clash_api") then
+				if not experimental then
+					experimental = {}
+				end
+				experimental.clash_api = {
+					store_fakeip = true,
+					cache_file = "/tmp/singbox_passwall_" .. flag .. ".db"
 				}
-
-				local fakedns_tag = dns_tag .. "_fakeip"
-				
-				if not server.address then
-					fakedns_tag = dns_tag
-				end
-				
-				table.insert(dns.servers, {
-					tag = fakedns_tag,
-					address = "fakeip",
-					strategy = remote_strategy,
-				})
-	
-				rule_server = fakedns_tag
-
-				if tags and tags:find("with_clash_api") then
-					if not experimental then
-						experimental = {}
-					end
-					experimental.clash_api = {
-						store_fakeip = true,
-						cache_file = "/tmp/singbox_passwall_" .. flag .. ".db"
-					}
-				end
 			end
-	
-			if remote_rule.domain or remote_rule.domain_suffix or remote_rule.domain_keyword or remote_rule.domain_regex or remote_rule.geosite then
-				local rule = api.clone(remote_rule)
-				rule.server = rule_server
-				table.insert(dns.rules, rule)
+		end
+
+		if remote_rule.domain or remote_rule.domain_suffix or remote_rule.domain_keyword or remote_rule.domain_regex or remote_rule.geosite then
+			local rule = api.clone(remote_rule)
+			rule.server = dns_tag
+			if remote_dns_fake then
+				rule.query_type = {
+					"A", "AAAA"
+				}
+				rule.server = fakedns_tag
 			end
+			table.insert(dns.rules, rule)
 		end
 	
 		if direct_dns_udp_server then
@@ -1233,14 +1228,16 @@ function gen_config(var)
 			end
 			local direct_rule = {
 				server = dns_tag,
-				domain = domain,
+				domain = #domain > 0 and domain or nil,
 				domain_suffix = #domain_suffix > 0 and domain_suffix or nil,
 				domain_keyword = #domain_keyword > 0 and domain_keyword or nil,
 				domain_regex = #domain_regex > 0 and domain_regex or nil,
 				geosite = #geosite > 0 and geosite or nil,
 				disable_cache = false,
 			}
-			table.insert(dns.rules, direct_rule)
+			if direct_rule.domain or direct_rule.domain_suffix or direct_rule.domain_keyword or direct_rule.domain_regex or direct_rule.geosite then
+				table.insert(dns.rules, direct_rule)
+			end
 	
 			local direct_strategy = "prefer_ipv6"
 			if direct_dns_query_strategy == "UseIPv4" then
@@ -1264,6 +1261,26 @@ function gen_config(var)
 			tag = "block",
 			address = "rcode://refused",
 		})
+
+		local default_dns_flag = "remote"
+		if node_id and (tcp_redir_port or udp_redir_port) then
+			local node = uci:get_all(appname, node_id)
+			if node.protocol == "_shunt" then
+				if node.default_node == "_direct" then
+					default_dns_flag = "direct"
+				end
+			end
+		else default_dns_flag = "direct"
+		end
+		if default_dns_flag == "remote" then
+			if remote_dns_fake then
+				table.insert(dns.rules, {
+					query_type = { "A", "AAAA" },
+					server = fakedns_tag
+				})
+			end
+		end
+		dns.final = default_dns_flag
 	
 		table.insert(inbounds, {
 			type = "direct",
@@ -1283,18 +1300,6 @@ function gen_config(var)
 			},
 			outbound = "dns-out"
 		})
-	
-		local default_dns_flag = "remote"
-		if node_id and (tcp_redir_port or udp_redir_port) then
-			local node = uci:get_all(appname, node_id)
-			if node.protocol == "_shunt" then
-				if node.default_node == "_direct" then
-					default_dns_flag = "direct"
-				end
-			end
-		else default_dns_flag = "direct"
-		end
-		dns.final = default_dns_flag
 	end
 	
 	if inbounds or outbounds then
