@@ -21,7 +21,7 @@ git clone --depth 1 https://github.com/HDragon8/iS-default-settings iS-default-s
 git clone --depth 1 https://github.com/kiddin9/luci-theme-edge
 git clone --depth 1 https://github.com/kiddin9/openwrt-amule-dlp && mvdir openwrt-amule-dlp
 #git clone --depth 1 https://github.com/yichya/luci-app-xray
-git clone --depth 1 -b packages https://github.com/xiaorouji/openwrt-passwall && mvdir openwrt-passwall
+git clone --depth 1 https://github.com/xiaorouji/openwrt-passwall-packages && mvdir openwrt-openwrt-passwall-packages
 git clone --depth 1 https://github.com/fw876/helloworld && mvdir helloworld
 #git clone --depth 1 -b luci https://github.com/xiaorouji/openwrt-passwall passwall1 && mv -n passwall1/luci-app-passwall  ./; rm -rf passwall1
 git clone --depth 1 https://github.com/xiaorouji/openwrt-passwall passwall1 && mv -n passwall1/luci-app-passwall  ./; rm -rf passwall1
