@@ -55,8 +55,6 @@ git clone --depth 1 https://github.com/jerrykuku/luci-app-ttnode
 git clone --depth 1 https://github.com/jerrykuku/luci-app-go-aliyundrive-webdav
 git clone --depth 1 https://github.com/sirpdboy/luci-app-advanced
 git clone --depth 1 https://github.com/sirpdboy/luci-theme-opentopd
-#git clone --depth 1 https://github.com/sirpdboy/luci-app-netdata
-#git clone --depth 1 https://github.com/Jason6111/luci-app-netdata
 git clone --depth 1 https://github.com/sirpdboy/luci-app-poweroffdevice
 git clone --depth 1 https://github.com/sirpdboy/luci-app-autotimeset
 git clone --depth 1 https://github.com/KFERMercer/luci-app-tcpdump
@@ -194,6 +192,10 @@ mv -n applications/* luciapp/; rm -rf applications
 git_sparse_clone master "https://github.com/coolsnowwolf/lede" "leanlede" package/lean package/network/services/shellsync package/network/services/e2guardian
 mv -n lean/* luciapp/; rm -rf lean
 rm -rf luciapp/default-settings
+
+#netdata
+rm -rf luci-app-netdata
+git clone --depth 1 https://github.com/sirpdboy/luci-app-netdata
 
 mv -n luciapp/* ./ ; rm -Rf luciapp
 #mv -n openwrt-passwall/* ./ ; rm -Rf openwrt-passwall
