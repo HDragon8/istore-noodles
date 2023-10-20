@@ -7147,6 +7147,7 @@ github.dev
 githubapp.com
 githubassets.com
 githubhackathon.com
+githubnext.com
 githubpreview.dev
 githubstatus.com
 githubuniverse.com
@@ -11745,6 +11746,7 @@ nike-uk.com
 nike-us.com
 nike-usa.com
 nike.com
+nike.host
 nike.shop
 nike.xn--hxt814e
 nike0594.com
@@ -14773,6 +14775,7 @@ sing68.com
 singfortibet.com
 singlelogin.app
 singlelogin.me
+singlelogin.site
 singtao.com
 singtaobooks.com
 singtaola.com
