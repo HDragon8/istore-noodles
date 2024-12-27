@@ -10,11 +10,11 @@ include $(TOPDIR)/rules.mk
 PKG_ARCH_quickstart:=$(ARCH)
 
 PKG_NAME:=quickstart
-PKG_VERSION:=0.7.18
+PKG_VERSION:=0.9.7
 PKG_RELEASE:=1
 PKG_SOURCE:=$(PKG_NAME)-binary-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/linkease/istore-packages/releases/download/prebuilt/
-PKG_HASH:=24abd2883f8f10094d712ae28cc9f644637f21dd3b5bdf01fb9ead0da8fae8f3
+PKG_HASH:=6c1d0b0fb13ad75ce2dad2d86b4a51ce925aa4c14551e95eecc4c65a08d57dbf
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-binary-$(PKG_VERSION)
 
@@ -47,6 +47,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 		chmod 755 /etc/uci-defaults/09-quickstart
 		/etc/uci-defaults/09-quickstart && rm -f /etc/uci-defaults/09-quickstart
 	fi
+	exit 0
 fi
 endef
 
@@ -57,12 +58,17 @@ define Build/Compile
 endef
 
 define Package/$(PKG_NAME)/install
-	$(INSTALL_DIR) $(1)/usr/sbin $(1)/etc/init.d $(1)/etc/uci-defaults $(1)/etc/hotplug.d/block $(1)/etc/config
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/etc/init.d $(1)/etc/uci-defaults $(1)/etc/hotplug.d/block $(1)/etc/config $(1)/usr/libexec/quickstart
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickstart.$(PKG_ARCH_quickstart) $(1)/usr/sbin/quickstart
 	$(INSTALL_BIN) ./files/quickstart.init $(1)/etc/init.d/quickstart
 	$(INSTALL_BIN) ./files/quickstart.uci-default $(1)/etc/uci-defaults/09-quickstart
 	$(INSTALL_BIN) ./files/quickstart.hotplug $(1)/etc/hotplug.d/block/09-quickstart
 	$(INSTALL_CONF) ./files/quickstart.config $(1)/etc/config/quickstart
+	$(INSTALL_BIN) ./files/dhcpvalid.sh $(1)/usr/libexec/quickstart/dhcpvalid.sh
+	$(INSTALL_BIN) ./files/startdhns.init $(1)/etc/init.d/startdhns
+	$(LN) /usr/sbin/quickstart $(1)/usr/sbin/startdhns
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
+	$(INSTALL_BIN) ./files/startdhns.hotplug $(1)/etc/hotplug.d/iface/21-startdhns
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))

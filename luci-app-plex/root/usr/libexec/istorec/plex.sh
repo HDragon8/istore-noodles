@@ -54,7 +54,7 @@ do_install() {
     -p $port:32400 "
   fi
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   [ -z "$claim_token" ] || cmd="$cmd -e \"PLEX_CLAIM=$claim_token\""
@@ -95,10 +95,10 @@ case ${ACTION} in
     docker ${ACTION} plex
   ;;
   "status")
-    docker ps --all -f 'name=plex' --format '{{.State}}'
+    docker ps --all -f 'name=^/plex$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=plex' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->32400/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
+    docker ps --all -f 'name=^/plex$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->32400/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
   ;;
   *)
     usage

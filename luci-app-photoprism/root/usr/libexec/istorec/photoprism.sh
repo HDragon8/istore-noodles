@@ -27,7 +27,7 @@ do_install() {
     -e PHOTOPRISM_UPLOAD_NSFW=\"true\" \
     -e PHOTOPRISM_ADMIN_PASSWORD=\"$password\" "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   [ -z "$picture" ] || cmd="$cmd -v \"$picture:/photoprism/originals\""
@@ -64,10 +64,10 @@ case ${ACTION} in
     docker ${ACTION} photoprism
   ;;
   "status")
-    docker ps --all -f 'name=photoprism' --format '{{.State}}'
+    docker ps --all -f 'name=^/photoprism$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=photoprism' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->2342/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
+    docker ps --all -f 'name=^/photoprism$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->2342/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
   ;;
   *)
     usage

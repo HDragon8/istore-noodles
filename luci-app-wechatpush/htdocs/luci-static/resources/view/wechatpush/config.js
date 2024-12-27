@@ -41,7 +41,7 @@ function renderStatus(isRunning) {
 }
 
 var cbiRichListValue = form.ListValue.extend({
-	renderWidget: function(section_id, option_index, cfgvalue) {
+	renderWidget: function (section_id, option_index, cfgvalue) {
 		var choices = this.transformChoices();
 		var widget = new ui.Dropdown((cfgvalue != null) ? cfgvalue : this.default, choices, {
 			id: this.cbid(section_id),
@@ -56,12 +56,12 @@ var cbiRichListValue = form.ListValue.extend({
 		return widget.render();
 	},
 
-	value: function(value, title, description) {
+	value: function (value, title, description) {
 		if (description) {
 			form.ListValue.prototype.value.call(this, value, E([], [
-				E('span', { 'class': 'hide-open' }, [ title ]),
+				E('span', { 'class': 'hide-open' }, [title]),
 				E('div', { 'class': 'hide-close', 'style': 'min-width:25vw' }, [
-					E('strong', [ title ]),
+					E('strong', [title]),
 					E('br'),
 					E('span', { 'style': 'white-space:normal' }, description)
 				])
@@ -132,8 +132,12 @@ return view.extend({
 		o = s.taboption('basic', form.Flag, 'enable', _('Enabled'));
 
 		o = s.taboption('basic', cbiRichListValue, 'jsonpath', _('Push Mode'));
+		o.value('', _('Close'),
+			_('Do not use push notifications, only use other features.'));
 		o.value('/usr/share/wechatpush/api/serverchan.json', _('WeChat serverchan'),
 			_('Using serverchan API, simple configuration, supports multiple push methods'));
+		o.value('/usr/share/wechatpush/api/serverchan3.json', _('Serverchan3 APP'),
+			_('Using serverchan3 API, simple configuration, support push to ServerChan App'));
 		o.value('/usr/share/wechatpush/api/qywx_mpnews.json', _('WeChat Work Image Message'),
 			_('Using WeChat Work application message, more complex configuration, and starting from June 20, 2022, additional configuration for trusted IP is required. Trusted IP cannot be shared. This channel is no longer recommended.'));
 		o.value('/usr/share/wechatpush/api/qywx_markdown.json', _('WeChat Work Markdown Version'),
@@ -148,9 +152,23 @@ return view.extend({
 			_('By modifying the JSON file, you can use a custom API'));
 
 		o = s.taboption('basic', form.Value, 'sckey', _('「wechatpush」sendkey'));
-		o.description = _('Get Instructions') + ' <a href="https://sct.ftqq.com/" target="_blank">' + _('Click here') + '</a>';
+		o.description = _('Get Instructions') + ' <a href="https://sct.ftqq.com/r/13285" target="_blank">' + _('Click here') + '</a>';
 		o.rmempty = false;
 		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan.json');
+
+		o = s.taboption('basic', form.Value, 'sc3key', _('「Serverchan3」sendkey'));
+		o.description = _('Get Instructions') + ' <a href="https://sc3.ft07.com/" target="_blank">' + _('Click here') + '</a>';
+		o.rmempty = false;
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan3.json');
+
+		o = s.taboption('basic', form.Value, 'sc3uid', _('「Serverchan3」uid'));
+		o.description = _('ServerChan3 uid');
+		o.rmempty = false;
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan3.json');
+
+		o = s.taboption('basic', form.Value, 'sc3tags', _('「Serverchan3」tags'));
+		o.description = _('ServerChan3 message tags, split with |');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan3.json');
 
 		o = s.taboption('basic', form.Value, 'corpid', _('corpid'));
 		o.description = _('Get Instructions') + ' <a href="https://work.weixin.qq.com/api/doc/10013" target="_blank">' + _('Click here') + '</a>';
@@ -180,18 +198,21 @@ return view.extend({
 		o.depends('jsonpath', '/usr/share/wechatpush/api/qywx_mpnews.json');
 		o.description = _('Supports JPG and PNG formats within 2MB <br> Optimal size: 900383 or 2.35:1');
 
+		o = s.taboption('basic', form.Value, 'proxy_ip', _('Trusted IP address'));
+		o.depends('jsonpath', '/usr/share/wechatpush/api/qywx_mpnews.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/qywx_markdown.json');
+		o.description = _('If the application was created after June 20, 2022, you need to set the trusted IP. This option should be used in conjunction with a proxy server.');
+
 		o = s.taboption('basic', form.Value, 'wxpusher_apptoken', _('appToken'));
 		o.description = _('Get Instructions') + ' <a href="https://wxpusher.zjiecode.com/docs/#/?id=%e5%bf%ab%e9%80%9f%e6%8e%a5%e5%85%a5" target="_blank">' + _('Click here') + '</a>';
 		o.rmempty = false;
 		o.depends('jsonpath', '/usr/share/wechatpush/api/wxpusher.json');
 
 		o = s.taboption('basic', form.Value, 'wxpusher_uids', _('uids'));
-		o.rmempty = false;
 		o.depends('jsonpath', '/usr/share/wechatpush/api/wxpusher.json');
 
 		o = s.taboption('basic', form.Value, 'wxpusher_topicIds', _('topicIds(Mass sending)'));
 		o.description = _('Get Instructions') + ' <a href="https://wxpusher.zjiecode.com/docs/#/?id=%e5%8f%91%e9%80%81%e6%b6%88%e6%81%af-1" target="_blank">' + _('Click here') + '</a>';
-		o.rmempty = false;
 		o.depends('jsonpath', '/usr/share/wechatpush/api/wxpusher.json');
 
 		o = s.taboption('basic', form.Value, 'pushplus_token', _('pushplus_token'));
@@ -225,7 +246,16 @@ return view.extend({
 		};
 		o.description = _('Please refer to the comments and other interface files for modifications. Limited resources, no longer supporting more interfaces, please debug on your own.<br />You can use a similar website to check the JSON file format: https://www.google.com/search?q=JSON+Parser+Online<br />Please use the 「Save」 button in the text box.');
 		o.depends('jsonpath', '/usr/share/wechatpush/api/diy.json');
-		
+
+		o = s.taboption('basic', form.Value, 'proxy_address', _('Proxy Address'));
+		o.description = _('When you want to use a proxy to push information, you can use this option.<br/>This may be helpful for scenarios like trusted IPs for WeChat Work.Using special characters may cause sending failure.<br/>Example:<br/>http://username:password@127.0.0.1:1080<br/>socks5://username:password@127.0.0.1:1080');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan3.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/qywx_mpnews.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/wxpusher.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/pushplus.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/telegram.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/diy.json');
 
 		o = s.taboption('basic', form.Button, '_test', _('Send Test'), _('You may need to save the configuration before sending.'));
 		o.inputstyle = 'add';
@@ -244,6 +274,13 @@ return view.extend({
 				return _this.map.reset();
 			});
 		}
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/serverchan3.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/qywx_mpnews.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/wxpusher.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/pushplus.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/telegram.json');
+		o.depends('jsonpath', '/usr/share/wechatpush/api/diy.json');
 
 		o = s.taboption('basic', form.Value, 'device_name', _('Device Name'));
 		o.description = _('The device name will be displayed in the push message title to identify the source device of the message.');
@@ -303,6 +340,22 @@ return view.extend({
 		o.description = _('Please enter the device MAC and device alias separated by a space, such as:<br/> XX:XX:XX:XX:XX:XX My Phone<br/> 192.168.1.2 My PC<br />Please use the 「Save」 button in the text box.');
 
 		// 推送内容
+		o = s.taboption('content', form.Button, '_getip', _('Test IP acquisition command'), _('You may need to save the configuration before sending.'));
+		o.inputstyle = 'action';
+		o.onclick = function () {
+			var _this = this;
+			return fs.exec(programPath, ['getip']).then(function (res) {
+				if (!res.stdout) {
+					throw new Error(_('Returned value is empty'));
+				}
+				_this.description = res.stdout.trim();
+				return _this.map.reset();
+			}).catch(function (err) {
+				_this.description = _('Fetch failed：') + err.message;
+				return _this.map.reset();
+			});
+		};
+
 		o = s.taboption('content', cbiRichListValue, 'get_ipv4_mode', _('IPv4 Dynamic Notification'));
 		o.value('', _('Close'),
 			_(' '));
@@ -312,10 +365,10 @@ return view.extend({
 			_('May fail due to server stability and frequent connections.<br/>If the interface can obtain the IP address properly, it is not recommended to use this method.'));
 
 		o = s.taboption('content', widgets.DeviceSelect, 'ipv4_interface', _("Device"));
-		o.description = _('Typically, it should be WAN or br-lan interface. For multi-wan environments, please choose accordingly.');
+		o.description = _('Generally, it should be the pppoe-wan or WAN interface. For multi-dial environments, please select the appropriate interface yourself.');
 		o.modalonly = true;
 		o.multiple = false;
-		o.default = 'WAN';
+		o.default = 'pppoe-wan';
 		o.depends('get_ipv4_mode', '1');
 
 		o = s.taboption('content', form.TextValue, 'ipv4_list', _('IPv4 API List'));
@@ -336,24 +389,6 @@ return view.extend({
 		};
 		o.description = _('Access a random address from the list above,URLs in the list are specific to Chinese websites. If you need to use this feature, please replace the URLs with the ones available to you.<br/>Please use the 「Save」 button in the text box.');
 
-		o = s.taboption('content', form.Button, '_update_ipv4_list', _('Update IPv4 list'));
-		o.inputstyle = 'add';
-		o.onclick = function () {
-			var _this = this;
-			return fs.exec('/usr/libexec/wechatpush-call', ['update_ip_list', 'ipv4']).then(function (res) {
-				if (res.code === 0)
-					_this.description = _('Update successful');
-				else if (res.code === 1)
-					_this.description = _('Update failed');
-				return _this.map.reset();
-			}).catch(function (err) {
-				ui.addNotification(null, E('p', [_('Unknown error: %s.').format(err)]));
-				_this.description = _('Update failed');
-				return _this.map.reset();
-			});
-		}
-		o.depends('get_ipv4_mode', '2');
-
 		o = s.taboption('content', cbiRichListValue, 'get_ipv6_mode', _('IPv6 Dynamic Notification'));
 		o.value('', _('Close'),
 			_(' '));
@@ -363,7 +398,7 @@ return view.extend({
 			_('May fail due to server stability and frequent connections.<br/>If the interface can obtain the IP address properly, it is not recommended to use this method.'));
 
 		o = s.taboption('content', widgets.DeviceSelect, 'ipv6_interface', _("Device"));
-		o.description = _('Typically, it should be WAN or br-lan interface. For multi-wan environments, please choose accordingly.');
+		o.description = _('Generally, it should be the pppoe-wan or WAN interface. For multi-dial environments, please select the appropriate interface yourself.');
 		o.modalonly = true;
 		o.multiple = false;
 		o.default = 'WAN';
@@ -387,34 +422,11 @@ return view.extend({
 		};
 		o.description = _('Access a random address from the list above,URLs in the list are specific to Chinese websites. If you need to use this feature, please replace the URLs with the ones available to you.<br/>Please use the 「Save」 button in the text box.');
 
-		o = s.taboption('content', form.Button, '_update_ipv6_list', _('Update IPv6 list'));
-		o.inputstyle = 'add';
-		o.onclick = function () {
-			var _this = this;
-			return fs.exec('/usr/libexec/wechatpush-call', ['update_ip_list', 'ipv6']).then(function (res) {
-				if (res.code === 0)
-					_this.description = _('Update successful');
-				else if (res.code === 1)
-					_this.description = _('Update failed');
-				return _this.map.reset();
-			}).catch(function (err) {
-				ui.addNotification(null, E('p', [_('Unknown error: %s.').format(err)]));
-				_this.description = _('Update failed');
-				return _this.map.reset();
-			});
-		}
-		o.depends('get_ipv6_mode', '2');
-		
-		o = s.taboption('content', form.Flag, 'auto_update_ip_list', _('Automatically update API list'));
-		o.description = _('When multiple IP retrieval attempts fail, try to automatically update the list file from GitHub');
-		o.depends('get_ipv4_mode', '2');
-		o.depends('get_ipv6_mode', '2');
-		
 		o = s.taboption('content', form.MultiValue, 'device_notification', _('Device Online/Offline Notification'));
 		o.value('online', _('Online Notification'));
 		o.value('offline', _('Offline Notification'));
 		o.modalonly = true;
-		
+
 		o = s.taboption('content', form.MultiValue, 'cpu_notification', _('CPU Alert'));
 		o.value('load', _('Load Alert'));
 		o.value('temp', _('Temperature Alert'));
@@ -430,8 +442,9 @@ return view.extend({
 			if (!isNaN(floatValue) && floatValue.toString() === value) {
 				return true;
 			}
-			return 'Please enter a numeric value only';
+			return _('Please enter a numeric value only');
 		};
+		o.description = _('In general, when the load value is lower than the number of logical cores, you typically don\'t need to pay much attention to it.');
 
 		o = s.taboption('content', form.Value, 'temperature_threshold', _('Temperature alert threshold'));
 		o.rmempty = false;
@@ -591,7 +604,7 @@ return view.extend({
 		o.value('device', _('Simplify the current device list'));
 		o.value('nowtime', _('Simplify the current time'));
 		o.value('content', _('Push only the title'));
-		
+
 		o = s.taboption('disturb', cbiRichListValue, 'do_not_disturb_mode', _('Do Not Disturb time setting'));
 		o.value('', _('Close'),
 			_(' '));
@@ -663,13 +676,25 @@ return view.extend({
 		o.datatype = 'list(neg(macaddr))';
 		o.depends('mac_filtering_mode_2', 'mac_offline');
 
+		o = s.taboption('disturb', form.Value, 'cpu_threshold_duration', _('When CPU temperature or load exceeds the threshold continuously for (s) seconds.'));
+		o.rmempty = false;
+		o.placeholder = '300';
+		o.datatype = 'and(uinteger)';
+		o.description = _('If set to 0, it\'s a single check without considering duration.');
+
+		o = s.taboption('disturb', form.Value, 'cpu_notification_delay', _('CPU alarm quiet time (seconds)'));
+		o.rmempty = false;
+		o.placeholder = '3600';
+		o.datatype = 'and(uinteger)';
+		o.description = _('No repeat notifications within the set time after the initial push notification.');
+
 		o = s.taboption('disturb', cbiRichListValue, 'login_disturb', _('Do Not Disturb for Login Reminders'));
 		o.value('', _('Close'),
 			_(' '));
 		o.value('1', _('Only record in the log'),
-			_('Ignore all login reminders and only record in the log'));
+			_('Ignore all login notifications (including failed logins), and only record them in the log.'));
 		o.value('2', _('Send notification only on the first login'),
-			_('Send notification only once within the specified time interval'));
+			_('Send notification only once within the specified time interval.'));
 
 		o = s.taboption('disturb', form.Value, 'login_notification_delay', _('Login reminder do not disturb time (s)'));
 		o.rmempty = false;

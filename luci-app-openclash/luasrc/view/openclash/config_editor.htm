@@ -316,6 +316,11 @@ function other_log_area(id, readOnly, wid, height)
 	other_log_area.markText({line:0,ch:0},{line:9999,ch:9999}, {css: 'font-size:13px'});
 };
 
+var custom_cfg_value = document.getElementById("cbid.openclash." + window.location.pathname.split("/")[window.location.pathname.split("/").length - 1] + ".other_parameters");
+if (custom_cfg_value) {
+	editor(custom_cfg_value, 'false', '100%', '300px');
+};
+
 var custom_firewall = document.getElementById("cbid.openclash.config.firewall_custom");
 var custom_ymchange = document.getElementById("cbid.openclash.config.ymchange_custom");
 if (custom_firewall) {
@@ -352,9 +357,7 @@ var myEditor_name_cus_r2 = document.getElementById("cbid.openclash.config.custom
 var myEditor_fake_filter = document.getElementById("cbid.openclash.config.custom_fake_filter");
 var myEditor_custom_domain_dns = document.getElementById("cbid.openclash.config.custom_domain_dns");
 var myEditor_edit_file = document.getElementById("cbid.openclash.config.edit_file");
-var myEditor_sniffing_domain_force = document.getElementById("cbid.openclash.config.sniffing_domain_force");
-var myEditor_sniffing_domain_filter = document.getElementById("cbid.openclash.config.sniffing_domain_filter");
-var myEditor_sniffing_port_filter = document.getElementById("cbid.openclash.config.sniffing_port_filter");
+var myEditor_custom_sniffer = document.getElementById("cbid.openclash.config.sniffer_custom");
 
 if (myEditor_hosts) {
 	editor(myEditor_hosts, 'false', '100%', '300px');
@@ -385,18 +388,9 @@ if (myEditor_custom_domain_dns) {
 	other_editor(myEditor_custom_domain_dns, 'false', '100%', '300px');
 };
 
-if (myEditor_sniffing_domain_force) {
-	other_editor(myEditor_sniffing_domain_force, 'false', '100%', '300px');
+if (myEditor_custom_sniffer) {
+	other_editor(myEditor_custom_sniffer, 'false', '100%', '300px');
 };
-
-if (myEditor_sniffing_domain_filter) {
-	other_editor(myEditor_sniffing_domain_filter, 'false', '100%', '300px');
-};
-
-if (myEditor_sniffing_port_filter) {
-	other_editor(myEditor_sniffing_port_filter, 'false', '100%', '300px');
-};
-
 
 var core_log = document.getElementById("core_log");
 var oc_log = document.getElementById("cbid.openclash.config.clog");

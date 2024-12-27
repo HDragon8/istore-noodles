@@ -6,12 +6,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sing-box
-PKG_VERSION:=1.5.3
+PKG_VERSION:=1.10.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/SagerNet/sing-box/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=e050f8a588d92547ba277fc8980af8ede544c345684c20e4b008fbc1b1371fb8
+PKG_HASH:=ca0385b45d160c2c2a1d0e09665f4f04caac27cb3dd9d6132173316dfd873b75
 
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
@@ -42,11 +42,11 @@ define Package/$(PKG_NAME)
 endef
 
 define Package/$(PKG_NAME)/description
-  Sing-box is a universal proxy platform which supports hysteria, SOCKS, Shadowsocks,
-  ShadowsocksR, ShadowTLS, Tor, trojan, VLess, VMess, WireGuard and so on.
+  Sing-box is a universal proxy platform which supports hysteria, SOCKS,
+  Shadowsocks, ShadowTLS, Tor, trojan, VLess, VMess, WireGuard and so on.
 endef
 
-GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=0
+GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=1
 
 define Package/$(PKG_NAME)/config
   menu "Customizing build tags"
@@ -77,7 +77,7 @@ define Package/$(PKG_NAME)/config
 
     config SING_BOX_WITH_GVISOR
       bool "Build with gVisor support"
-      default n
+      default y
 
     config SING_BOX_WITH_QUIC
       bool "Build with QUIC support"
@@ -88,10 +88,6 @@ define Package/$(PKG_NAME)/config
 
     config SING_BOX_WITH_REALITY_SERVER
       bool "Build with reality TLS server support"
-      default n
-
-    config SING_BOX_WITH_SHADOWSOCKSR
-      bool "Build with ShadowsockR support"
       default n
 
     config SING_BOX_WITH_UTLS
@@ -118,7 +114,6 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_SING_BOX_WITH_GVISOR \
 	CONFIG_SING_BOX_WITH_QUIC \
 	CONFIG_SING_BOX_WITH_REALITY_SERVER \
-	CONFIG_SING_BOX_WITH_SHADOWSOCKSR \
 	CONFIG_SING_BOX_WITH_UTLS \
 	CONFIG_SING_BOX_WITH_V2RAY_API \
 	CONFIG_SING_BOX_WITH_WIREGUARD
@@ -132,24 +127,16 @@ GO_PKG_TAGS:=$(subst $(space),$(comma),$(strip \
 	$(if $(CONFIG_SING_BOX_WITH_GVISOR),with_gvisor) \
 	$(if $(CONFIG_SING_BOX_WITH_QUIC),with_quic) \
 	$(if $(CONFIG_SING_BOX_WITH_REALITY_SERVER),with_reality_server) \
-	$(if $(CONFIG_SING_BOX_WITH_SHADOWSOCKSR),with_shadowsocksr) \
 	$(if $(CONFIG_SING_BOX_WITH_UTLS),with_utls) \
 	$(if $(CONFIG_SING_BOX_WITH_V2RAY_API),with_v2ray_api) \
 	$(if $(CONFIG_SING_BOX_WITH_WIREGUARD),with_wireguard) \
 ))
 
 define Package/$(PKG_NAME)/conffiles
-/etc/sing-box/config.json
 endef
 
 define Package/$(PKG_NAME)/install
 	$(call GoPackage/Package/Install/Bin,$(1))
-
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/sing-box.init $(1)/etc/init.d/sing-box
-
-	$(INSTALL_DIR) $(1)/etc/sing-box
-	$(INSTALL_DATA) ./files/config.json.example $(1)/etc/sing-box/config.json.example
 endef
 
 $(eval $(call GoBinPackage,sing-box))

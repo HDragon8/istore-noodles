@@ -27,7 +27,7 @@ do_install() {
     --dns=172.17.0.1 \
     -p $http_port:5230 "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -62,10 +62,10 @@ case ${ACTION} in
     docker ${ACTION} memos
   ;;
   "status")
-    docker ps --all -f 'name=memos' --format '{{.State}}'
+    docker ps --all -f 'name=^/memos$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=memos' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/memos$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

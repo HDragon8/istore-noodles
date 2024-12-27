@@ -37,7 +37,7 @@ do_install() {
     -p $port:2345 "
   fi
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd --name xunlei \"$image_name\""
@@ -70,10 +70,10 @@ case ${ACTION} in
     docker ${ACTION} xunlei
   ;;
   "status")
-    docker ps --all -f 'name=xunlei' --format '{{.State}}'
+    docker ps --all -f 'name=^/xunlei$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=xunlei' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->2345/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
+    docker ps --all -f 'name=^/xunlei$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->2345/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
   ;;
   *)
     usage

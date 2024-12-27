@@ -40,7 +40,7 @@
 			"recurse": true
 		}
 	},
-	
+
 	"admin/nas": {
 		"title": "NAS",
 		"order": 50,
@@ -58,7 +58,7 @@
 			"recurse": true
 		}
 	},
-	
+
 	"admin/network": {
 		"title": "Network",
 		"order": 998,
@@ -87,7 +87,7 @@
 	},
 
 	"admin/logout": {
-		"title": "Logout",
+		"title": "Log out",
 		"order": 999,
 		"action": {
 			"type": "call",

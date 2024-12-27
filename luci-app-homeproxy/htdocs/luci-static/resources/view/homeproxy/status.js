@@ -1,4 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
  *
  * Copyright (C) 2022-2023 ImmortalWrt.org
  */
@@ -31,7 +32,7 @@ var css = '				\
 var hp_dir = '/var/run/homeproxy';
 
 function getConnStat(self, site) {
-	var callConnStat = rpc.declare({
+	const callConnStat = rpc.declare({
 		object: 'luci.homeproxy',
 		method: 'connection_check',
 		params: ['site'],
@@ -60,14 +61,14 @@ function getConnStat(self, site) {
 }
 
 function getResVersion(self, type) {
-	var callResVersion = rpc.declare({
+	const callResVersion = rpc.declare({
 		object: 'luci.homeproxy',
 		method: 'resources_get_version',
 		params: ['type'],
 		expect: { '': {} }
 	});
 
-	var callResUpdate = rpc.declare({
+	const callResUpdate = rpc.declare({
 		object: 'luci.homeproxy',
 		method: 'resources_update',
 		params: ['type'],
@@ -113,7 +114,7 @@ function getResVersion(self, type) {
 }
 
 function getRuntimeLog(name, filename) {
-	var callLogClean = rpc.declare({
+	const callLogClean = rpc.declare({
 		object: 'luci.homeproxy',
 		method: 'log_clean',
 		params: ['type'],
@@ -122,7 +123,7 @@ function getRuntimeLog(name, filename) {
 
 	var log_textarea = E('div', { 'id': 'log_textarea' },
 		E('img', {
-			'src': L.resource(['icons/loading.gif']),
+			'src': L.resource('icons/loading.gif'),
 			'alt': _('Loading'),
 			'style': 'vertical-align:middle'
 		}, _('Collecting data...'))
@@ -199,16 +200,6 @@ return view.extend({
 
 		s = m.section(form.NamedSection, 'config', 'homeproxy', _('Resources management'));
 		s.anonymous = true;
-
-		if (routing_mode === 'custom') {
-			o = s.option(form.DummyValue, '_geoip_version', _('GeoIP version'));
-			o.cfgvalue = function() { return getResVersion(this, 'geoip') };
-			o.rawhtml = true;
-
-			o = s.option(form.DummyValue, '_geosite_version', _('GeoSite version'));
-			o.cfgvalue = function() { return getResVersion(this, 'geosite') };
-			o.rawhtml = true;
-		}
 
 		o = s.option(form.DummyValue, '_china_ip4_version', _('China IPv4 list version'));
 		o.cfgvalue = function() { return getResVersion(this, 'china_ip4') };

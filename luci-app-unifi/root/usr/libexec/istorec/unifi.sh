@@ -37,7 +37,7 @@ do_install() {
     -p $http_port:8443 "
   fi
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -72,10 +72,10 @@ case ${ACTION} in
     docker ${ACTION} unifi
   ;;
   "status")
-    docker ps --all -f 'name=unifi' --format '{{.State}}'
+    docker ps --all -f 'name=^/unifi$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=unifi' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->8443/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
+    docker ps --all -f 'name=^/unifi$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->8443/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
   ;;
   *)
     usage

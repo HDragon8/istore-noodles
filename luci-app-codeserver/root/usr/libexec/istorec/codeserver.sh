@@ -31,7 +31,7 @@ do_install() {
     -e DEFAULT_WORKSPACE=/config/workspace \
     -p $http_port:8443 "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   [ -z "$env_password" ] || cmd="$cmd -e \"PASSWORD=$env_password\""
@@ -72,10 +72,10 @@ case ${ACTION} in
     docker ${ACTION} codeserver
   ;;
   "status")
-    docker ps --all -f 'name=codeserver' --format '{{.State}}'
+    docker ps --all -f 'name=^/codeserver$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=codeserver' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/codeserver$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   "git-config")
     docker exec codeserver git config --global user.name "${1}"

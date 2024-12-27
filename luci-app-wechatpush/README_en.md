@@ -42,6 +42,7 @@ For devices that do not declare hostnames, devices connected via optical modem d
 - Use device name remarks.
 - Configure to obtain the hostname from the optical modem in advanced settings.
 - Enable MAC device database.
+- Install samba*-server or samba*-client to enable the program to query hostnames via NetBIOS.
 
 
 **Regarding Device Online Status:**
@@ -56,6 +57,11 @@ By default, ping/arping is used to actively detect device online status to count
 
 Traffic statistics functionality depends on `wrtbwmon`. Please install or compile it yourself. **Enabling this plugin will conflict with Routing/NAT, Flow Offloading, proxy internet access, and other plugins, resulting in the inability to obtain traffic statistics. Please choose accordingly.**
 
+**About Hard Drive Information:**
+
+When the OpenWrt system or remote host (PVE) does not have lsblk installed, the hard drive capacity information may be inconsistent with the actual capacity.
+
+When the OpenWrt system or remote host (PVE) does not have smartctl installed, information such as hard drive temperature, uptime, and health status will not be available.
 
 **Regarding Bug Submissions:**
 

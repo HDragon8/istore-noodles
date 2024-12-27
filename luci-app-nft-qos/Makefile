@@ -6,8 +6,13 @@
 
 include $(TOPDIR)/rules.mk
 
-LUCI_TITLE:=QoS over Nftables
-LUCI_DEPENDS:=+luci-base +luci-compat +nft-qos
+LUCI_TITLE:=Qos over Nftables
+LUCI_DEPENDS:=+nft-qos
+LUCI_PKGARCH:=all
+
+PKG_NAME:=luci-app-nft-qos
+PKG_VERSION:=1
+PKG_RELEASE:=1
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

@@ -5,29 +5,19 @@
 
 "use strict";
 "require form";
-"require uci";
 "require view";
 "require adblock-fast.status as adb";
 
-var pkg = {
-	get Name() {
-		return "adblock-fast";
-	},
-	get URL() {
-		return "https://docs.openwrt.melmac.net/" + pkg.Name + "/";
-	},
-	humanFileSize: function (bytes, si = false, dp = 2) {
-		return `%${si ? 1000 : 1024}.${dp ?? 0}mB`.format(bytes);
-	},
-};
+var pkg = adb.pkg;
 
 return view.extend({
 	load: function () {
 		return Promise.all([
 			L.resolveDefault(adb.getFileUrlFilesizes(pkg.Name), {}),
 			L.resolveDefault(adb.getPlatformSupport(pkg.Name), {}),
-			uci.load(pkg.Name),
-			uci.load("dhcp"),
+			L.resolveDefault(L.uci.load(pkg.Name), {}),
+			L.resolveDefault(L.uci.load("dhcp"), {}),
+			L.resolveDefault(L.uci.load("smartdns"), {}),
 		]);
 	},
 
@@ -38,16 +28,23 @@ return view.extend({
 				ipset_installed: false,
 				nft_installed: false,
 				dnsmasq_installed: false,
-				unbound_installed: false,
 				dnsmasq_ipset_support: false,
 				dnsmasq_nftset_support: false,
+				smartdns_installed: false,
+				smartdns_ipset_support: false,
+				smartdns_nftset_support: false,
+				unbound_installed: false,
 				leds: [],
 			},
+			pkg: (!pkg.isObjEmpty(data[2]) && data[2]) || null,
+			dhcp: (!pkg.isObjEmpty(data[3]) && data[3]) || null,
+			smartdns: (!pkg.isObjEmpty(data[4]) && data[4]) || null,
 		};
 		var status, m, s1, s2, s3, o;
 
 		status = new adb.status();
 		m = new form.Map(pkg.Name, _("AdBlock-Fast - Configuration"));
+
 		s1 = m.section(form.NamedSection, "config", pkg.Name);
 		s1.tab("tab_basic", _("Basic Configuration"));
 		s1.tab("tab_advanced", _("Advanced Configuration"));
@@ -95,6 +92,29 @@ return view.extend({
 					);
 			}
 		}
+		if (!reply.platform.smartdns_installed) {
+			text =
+				text +
+				"<br />" +
+				_("Please note that %s is not supported on this system.").format(
+					"<i>smartdns.domainset</i>"
+				);
+		} else {
+			if (!reply.platform.smartdns_ipset_support) {
+				text +=
+					"<br />" +
+					_("Please note that %s is not supported on this system.").format(
+						"<i>smartdns.ipset</i>"
+					);
+			}
+			if (!reply.platform.smartdns_nftset_support) {
+				text +=
+					"<br />" +
+					_("Please note that %s is not supported on this system.").format(
+						"<i>smartdns.nftset</i>"
+					);
+			}
+		}
 		if (!reply.platform.unbound_installed) {
 			text =
 				text +
@@ -122,6 +142,15 @@ return view.extend({
 			}
 			o.value("dnsmasq.servers", _("dnsmasq servers file"));
 		}
+		if (reply.platform.smartdns_installed) {
+			o.value("smartdns.domainset", _("smartdns domain set"));
+			if (reply.platform.smartdns_ipset_support) {
+				o.value("smartdns.ipset", _("smartdns ipset"));
+			}
+			if (reply.platform.smartdns_nftset_support) {
+				o.value("smartdns.nftset", _("smartdns nft set"));
+			}
+		}
 		if (reply.platform.unbound_installed) {
 			o.value("unbound.adb_list", _("unbound adblock list"));
 		}
@@ -141,55 +170,134 @@ return view.extend({
 		);
 		o.depends("dns", "dnsmasq.conf");
 
-		o = s1.taboption(
-			"tab_basic",
-			form.ListValue,
-			"dnsmasq_instance",
-			_("Use AdBlocking on the dnsmasq instance(s)"),
-			_(
-				"You can limit the AdBlocking to a specific dnsmasq instance(s) (%smore information%s)."
-			).format(
-				'<a href="' + pkg.URL + "#dnsmasq_instance" + '" target="_blank">',
-				"</a>"
-			)
-		);
-		o.value("*", _("AdBlock on all instances"));
+		if (reply.platform.dnsmasq_installed && reply.dhcp) {
+			o = s1.taboption(
+				"tab_basic",
+				form.ListValue,
+				"dnsmasq_instance_option",
+				_("Use AdBlocking on the dnsmasq instance(s)"),
+				_(
+					"You can limit the AdBlocking to the specific dnsmasq instance(s) (%smore information%s)."
+				).format(
+					'<a href="' + pkg.URL + "#dnsmasq_instance" + '" target="_blank">',
+					"</a>"
+				)
+			);
+			o.value("*", _("AdBlock on all instances"));
+			o.value("+", _("AdBlock on select instances"));
+			o.value("-", _("No AdBlock on dnsmasq"));
+			o.default = "*";
+			o.depends("dns", "dnsmasq.addnhosts");
+			o.depends("dns", "dnsmasq.servers");
+			o.retain = true;
+			o.cfgvalue = function (section_id) {
+				let val = this.map.data.get(
+					this.map.config,
+					section_id,
+					"dnsmasq_instance"
+				);
+				if (val && val[0]) {
+					switch (val[0]) {
+						case "*":
+						case "-":
+							return val[0];
+						default:
+							return "+";
+					}
+				} else return "*";
+			};
+			o.write = function (section_id, formvalue) {
+				L.uci.set(pkg.Name, section_id, "dnsmasq_instance", formvalue);
+			};
 
-		//		Object.values(L.uci.sections("dhcp", "dnsmasq")).forEach(function (
-		//			val,
-		//			index
-		//		) {
-		//			const nameValueMap = new Map(Object.entries(val));
-		//			so.value(
-		//				nameValueMap.get(".name"),
-		//				"%s (Name: %s, Domain: %s, Local: %s)".format(
-		//					nameValueMap.get(".index"),
-		//					nameValueMap.get(".name") || "noname",
-		//					val.domain || "unset",
-		//					val.local || "unset"
-		//				)
-		//			);
-		//		});
+			o = s1.taboption(
+				"tab_basic",
+				form.MultiValue,
+				"dnsmasq_instance",
+				_("Pick the dnsmasq instance(s) for AdBlocking")
+			);
+			Object.values(L.uci.sections("dhcp", "dnsmasq")).forEach(function (
+				element
+			) {
+				var description;
+				var key;
+				if (element[".name"] === L.uci.resolveSID("dhcp", element[".name"])) {
+					key = element[".index"];
+					description = "dnsmasq[" + element[".index"] + "]";
+				} else {
+					key = element[".name"];
+					description = element[".name"];
+				}
+				o.value(key, description);
+			});
+			o.depends("dnsmasq_instance_option", "+");
+			o.retain = true;
+		}
 
-		var sections = uci.sections("dhcp", "dnsmasq");
-		sections.forEach((element) => {
-			var description;
-			var key;
-			if (element[".name"] === uci.resolveSID("dhcp", element[".name"])) {
-				key = element[".index"];
-				description = "dnsmasq[" + element[".index"] + "]";
-			} else {
-				key = element[".name"];
-				description = element[".name"];
-			}
-			o.value(key, _("AdBlock on %s only").format(description));
-		});
-		o.value("-", _("No AdBlock on dnsmasq"));
-		o.default = "*";
-		o.depends("dns", "dnsmasq.addnhosts");
-		o.depends("dns", "dnsmasq.servers");
-		o.retain = true;
+		if (reply.platform.smartdns_installed && reply.smartdns) {
+			o = s1.taboption(
+				"tab_basic",
+				form.ListValue,
+				"smartdns_instance_option",
+				_("Use AdBlocking on the SmartDNS instance(s)"),
+				_(
+					"You can limit the AdBlocking to the specific SmartDNS instance(s) (%smore information%s)."
+				).format(
+					'<a href="' + pkg.URL + "#smartdns_instance" + '" target="_blank">',
+					"</a>"
+				)
+			);
+			o.value("*", _("AdBlock on all instances"));
+			o.value("+", _("AdBlock on select instances"));
+			o.value("-", _("No AdBlock on SmartDNS"));
+			o.default = "*";
+			o.depends("dns", "smartdns.domainset");
+			o.retain = true;
+			o.cfgvalue = function (section_id) {
+				let val = this.map.data.get(
+					this.map.config,
+					section_id,
+					"smartdns_instance"
+				);
+				if (val && val[0]) {
+					switch (val[0]) {
+						case "*":
+						case "-":
+							return val[0];
+						default:
+							return "+";
+					}
+				} else return "*";
+			};
+			o.write = function (section_id, formvalue) {
+				L.uci.set(pkg.Name, section_id, "smartdns_instance", formvalue);
+			};
 
+			o = s1.taboption(
+				"tab_basic",
+				form.MultiValue,
+				"smartdns_instance",
+				_("Pick the SmartDNS instance(s) for AdBlocking")
+			);
+			Object.values(L.uci.sections("smartdns", "smartdns")).forEach(function (
+				element
+			) {
+				var description;
+				var key;
+				if (
+					element[".name"] === L.uci.resolveSID("smartdns", element[".name"])
+				) {
+					key = element[".index"];
+					description = "smartdns[" + element[".index"] + "]";
+				} else {
+					key = element[".name"];
+					description = element[".name"];
+				}
+				o.value(key, description);
+			});
+			o.depends("smartdns_instance_option", "+");
+			o.retain = true;
+		}
 		o = s1.taboption(
 			"tab_basic",
 			form.ListValue,
@@ -378,10 +486,10 @@ return view.extend({
 		s3.anonymous = true;
 		s3.addremove = true;
 
-		o = s3.option(form.DummyValue, "_size", "Size");
+		o = s3.option(form.DummyValue, "_size", _("Size"));
 		o.modalonly = false;
 		o.cfgvalue = function (section_id) {
-			let url = uci.get(pkg.Name, section_id, "url");
+			let url = L.uci.get(pkg.Name, section_id, "url");
 			let ret = _("Unknown");
 			reply.sizes.forEach((element) => {
 				if (element.url === url) {
@@ -399,8 +507,26 @@ return view.extend({
 		o.value("allow", _("Allow"));
 		o.value("block", _("Block"));
 		o.default = "block";
+		o.textvalue = function (section_id) {
+			var val = this.cfgvalue(section_id);
+			return val == "allow" ? _("Allow") : _("Block");
+		};
+
+		o = s3.option(form.DummyValue, "_name", _("Name/URL"));
+		o.modalonly = false;
+		o.cfgvalue = function (section_id) {
+			let name = L.uci.get(pkg.Name, section_id, "name");
+			let url = L.uci.get(pkg.Name, section_id, "url");
+			let ret = _("Unknown");
+			return name ? name : url;
+		};
+
+		o = s3.option(form.Value, "name", _("Name"));
+		o.modalonly = true;
+		o.optional = true;
 
 		o = s3.option(form.Value, "url", _("URL"));
+		o.modalonly = true;
 		o.optional = false;
 
 		return Promise.all([status.render(), m.render()]);

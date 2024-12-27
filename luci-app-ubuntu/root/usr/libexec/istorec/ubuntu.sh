@@ -44,7 +44,7 @@ do_install() {
     -e VNC_PW=${password} \
     -e VNC_USE_HTTP=0 "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -79,10 +79,10 @@ case ${ACTION} in
     docker ${ACTION} ubuntu
   ;;
   "status")
-    docker ps --all -f 'name=ubuntu' --format '{{.State}}'
+    docker ps --all -f 'name=^/ubuntu$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=ubuntu' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/ubuntu$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

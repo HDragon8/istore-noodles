@@ -172,7 +172,11 @@ local function processData(szType, content)
 		result.v2ray_protocol = 'vmess'
 		result.server = info.add
 		result.server_port = info.port
+		if info.net == "tcp" then
+			info.net = "raw"
+		end
 		result.transport = info.net
+		result.alter_id = info.aid
 		result.vmess_id = info.id
 		result.alias = info.ps
 		-- result.mux = 1
@@ -181,11 +185,19 @@ local function processData(szType, content)
 			result.ws_host = info.host
 			result.ws_path = info.path
 		end
+		if info.net == 'httpupgrade' then
+			result.httpupgrade_host = info.host
+			result.httpupgrade_path = info.path
+		end
+		if info.net == 'splithttp' then
+			result.splithttp_host = info.host
+			result.splithttp_path = info.path
+		end
 		if info.net == 'h2' then
 			result.h2_host = info.host
 			result.h2_path = info.path
 		end
-		if info.net == 'tcp' then
+		if info.net == 'raw' or info.net == 'tcp' then
 			if info.type and info.type ~= "http" then
 				info.type = "none"
 			end
@@ -227,10 +239,6 @@ local function processData(szType, content)
 			result.insecure = 1
 		else
 			result.tls = "0"
-		end
-		-- https://www.v2fly.org/config/protocols/vmess.html#vmess-md5-认证信息-淘汰机制
-		if info.aid and (tonumber(info.aid) > 0) then
-			result.server = nil
 		end
 	elseif szType == "ss" then
 		local idx_sp = 0
@@ -368,6 +376,12 @@ local function processData(szType, content)
 		if result.transport == "ws" then
 			result.ws_host = (result.tls ~= "1") and (params.host and UrlDecode(params.host)) or nil
 			result.ws_path = params.path and UrlDecode(params.path) or "/"
+		elseif result.transport == "httpupgrade" then
+			result.httpupgrade_host = (result.tls ~= "1") and (params.host and UrlDecode(params.host)) or nil
+			result.httpupgrade_path = params.path and UrlDecode(params.path) or "/"
+		elseif result.transport == "splithttp" then
+			result.splithttp_host = (result.tls ~= "1") and (params.host and UrlDecode(params.host)) or nil
+			result.splithttp_path = params.path and UrlDecode(params.path) or "/"
 		-- make it compatible with bullshit, "h2" transport is non-existent at all
 		elseif result.transport == "http" or result.transport == "h2" then
 			result.transport = "h2"
@@ -389,7 +403,7 @@ local function processData(szType, content)
 		elseif result.transport == "grpc" then
 			result.serviceName = params.serviceName
 			result.grpc_mode = params.mode or "gun"
-		elseif result.transport == "tcp" then
+		elseif result.transport == "tcp" or result.transport == "raw" then
 			result.tcp_guise = params.headerType or "none"
 			if result.tcp_guise == "http" then
 				result.tcp_host = params.host and UrlDecode(params.host) or nil

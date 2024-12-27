@@ -39,7 +39,7 @@ do_install() {
   cmd="$cmd -v /mnt:/mnt"
   mountpoint -q /mnt && cmd="$cmd:rslave"
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd --name kodexplorer \"$IMAGE_NAME\""
@@ -73,10 +73,10 @@ case ${ACTION} in
     docker ${ACTION} kodexplorer
   ;;
   "status")
-    docker ps --all -f 'name=kodexplorer' --format '{{.State}}'
+    docker ps --all -f 'name=^/kodexplorer$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=kodexplorer' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/kodexplorer$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

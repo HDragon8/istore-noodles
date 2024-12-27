@@ -28,7 +28,7 @@ do_install() {
     --dns=172.17.0.1 \
     -p $http_port:4533 "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -63,10 +63,10 @@ case ${ACTION} in
     docker ${ACTION} navidrome
   ;;
   "status")
-    docker ps --all -f 'name=navidrome' --format '{{.State}}'
+    docker ps --all -f 'name=^/navidrome$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=navidrome' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/navidrome$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

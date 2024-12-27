@@ -32,7 +32,7 @@ do_install() {
     -p $port:3000 \
     -e UMASK=000"
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   if [ -n "$auto_update" ]; then
@@ -77,10 +77,10 @@ case ${ACTION} in
     docker ${ACTION} nastools
   ;;
   "status")
-    docker ps --all -f 'name=nastools' --format '{{.State}}'
+    docker ps --all -f 'name=^/nastools$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=nastools' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/nastools$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

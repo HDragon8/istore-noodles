@@ -25,7 +25,7 @@ do_install() {
     --dns=127.0.0.1 \
     --network=host "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -60,7 +60,7 @@ case ${ACTION} in
     docker ${ACTION} owntone
   ;;
   "status")
-    docker ps --all -f 'name=owntone' --format '{{.State}}'
+    docker ps --all -f 'name=^/owntone$' --format '{{.State}}'
   ;;
   "port")
     echo 3689

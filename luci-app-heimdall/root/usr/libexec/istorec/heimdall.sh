@@ -38,7 +38,7 @@ do_install_detail() {
   cmd="$cmd -v /mnt:/mnt"
   mountpoint -q /mnt && cmd="$cmd:rslave"
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd --name heimdall \"$IMAGE_NAME\""
@@ -55,7 +55,8 @@ usage() {
   echo "      upgrade                Upgrade the heimdall"
   echo "      rm/start/stop/restart  Remove/Start/Stop/Restart the heimdall"
   echo "      status                 Heimdall status"
-  echo "      port                   Heimdall port"
+  echo "      port                   Heimdall http port"
+  echo "      https_port             Heimdall https port"
 }
 
 case ${ACTION} in
@@ -72,10 +73,13 @@ case ${ACTION} in
     docker ${ACTION} heimdall
   ;;
   "status")
-    docker ps --all -f 'name=heimdall' --format '{{.State}}'
+    docker ps --all -f 'name=^/heimdall$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=heimdall' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/heimdall$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->80/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
+  ;;
+  "https_port")
+    docker ps --all -f 'name=^/heimdall$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->443/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
   ;;
   *)
     usage

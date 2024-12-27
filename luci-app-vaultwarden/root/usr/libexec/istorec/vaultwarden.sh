@@ -37,7 +37,7 @@ do_install() {
     cmd="$cmd -e \"SIGNUPS_ALLOWED=false\""
   fi
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -72,11 +72,10 @@ case ${ACTION} in
     docker ${ACTION} vaultwarden
   ;;
   "status")
-    docker ps --all -f 'name=vaultwarden' --format '{{.State}}'
+    docker ps --all -f 'name=^/vaultwarden$' --format '{{.State}}'
   ;;
   "port")
-    http_port=`uci get vaultwarden.@main[0].http_port 2>/dev/null`
-    echo $http_port
+    uci get -q vaultwarden.@main[0].http_port 2>/dev/null
   ;;
   *)
     usage

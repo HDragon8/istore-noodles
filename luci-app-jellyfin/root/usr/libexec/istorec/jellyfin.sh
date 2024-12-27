@@ -81,13 +81,13 @@ do_install_detail() {
     cmd="$cmd\
     -t \
     --privileged "
-    for dev in iep rga dri dma_heap mpp_service mpp-service vpu_service vpu-service \
+    for dev in iep rga dri dma_heap mali0 mpp_service mpp-service vpu_service vpu-service \
         hevc_service hevc-service rkvdec rkvenc avsd vepu h265e ; do
       [ -e "/dev/$dev" ] && cmd="$cmd --device /dev/$dev"
     done
   elif [ -d /dev/dri ]; then
     cmd="$cmd\
-    --device /dev/dri:/dev/dri \
+    -v /dev/dri:/dev/dri \
     --privileged "
   fi
   if [ "$hostnet" = 1 ]; then
@@ -100,7 +100,7 @@ do_install_detail() {
     -p $port:8096 "
   fi
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   [ -z "$cache" ] || cmd="$cmd -v \"$cache:/config/transcodes\""
@@ -139,10 +139,10 @@ case ${ACTION} in
     docker ${ACTION} jellyfin
   ;;
   "status")
-    docker ps --all -f 'name=jellyfin' --format '{{.State}}'
+    docker ps --all -f 'name=^/jellyfin$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=jellyfin' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->8096/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
+    docker ps --all -f 'name=^/jellyfin$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*->8096/tcp' | sed 's/0.0.0.0:\([0-9]*\)->.*/\1/'
   ;;
   *)
     usage

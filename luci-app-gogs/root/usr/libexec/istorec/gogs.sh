@@ -32,7 +32,7 @@ do_install() {
     -p $http_port:3000 \
     -p $ssh_port:22 "
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd -v /mnt:/mnt"
@@ -67,11 +67,10 @@ case ${ACTION} in
     docker ${ACTION} gogs
   ;;
   "status")
-    docker ps --all -f 'name=gogs' --format '{{.State}}'
+    docker ps --all -f 'name=^/gogs$' --format '{{.State}}'
   ;;
   "port")
-    local http_port=`uci get gogs.@main[0].http_port 2>/dev/null`
-    echo $http_port
+    uci -q get gogs.@main[0].http_port 2>/dev/null
   ;;
   *)
     usage

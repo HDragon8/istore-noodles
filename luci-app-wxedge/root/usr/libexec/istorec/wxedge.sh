@@ -27,7 +27,7 @@ do_install() {
     -v \"$path/containerd:/var/lib/containerd\" \
     -e PLACE=CTKS"
 
-  local tz="`uci get system.@system[0].zonename`"
+  local tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
   cmd="$cmd --name wxedge \"$image_name\""
@@ -78,10 +78,10 @@ EOF
     docker ${ACTION} wxedge
   ;;
   "status")
-    docker ps --all -f 'name=wxedge' --format '{{.State}}'
+    docker ps --all -f 'name=^/wxedge$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=wxedge' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/wxedge$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

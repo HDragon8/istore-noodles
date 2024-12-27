@@ -22,9 +22,8 @@ o.default = 1
 o.rmempty = false
 
 local auto_switch_tip
-local current_node_file = string.format("/tmp/etc/%s/id/socks_%s", appname, arg[1])
-local current_node = luci.sys.exec(string.format("[ -f '%s' ] && echo -n $(cat %s)", current_node_file, current_node_file))
-if current_node and current_node ~= "" and current_node ~= "nil" then
+local current_node = api.get_cache_var("socks_" .. arg[1])
+if current_node then
 	local n = uci:get_all(appname, current_node)
 	if n then
 		if tonumber(m:get(arg[1], "enable_autoswitch") or 0) == 1 then
@@ -41,6 +40,9 @@ socks_node = s:option(ListValue, "node", translate("Node"))
 if auto_switch_tip then
 	socks_node.description = auto_switch_tip
 end
+
+o = s:option(Flag, "bind_local", translate("Bind Local"), translate("When selected, it can only be accessed localhost."))
+o.default = "0"
 
 local n = 1
 uci:foreach(appname, "socks", function(s)
@@ -60,6 +62,10 @@ if has_singbox or has_xray then
 	o.default = 0
 	o.datatype = "port"
 end
+
+o = s:option(Flag, "log", translate("Enable") .. " " .. translate("Log"))
+o.default = 1
+o.rmempty = false
 
 o = s:option(Flag, "enable_autoswitch", translate("Auto Switch"))
 o.default = 0

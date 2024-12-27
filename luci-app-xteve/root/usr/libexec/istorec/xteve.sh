@@ -37,7 +37,7 @@ do_install() {
     -p $port:34400 "
 
   if [ -z "$tz" ]; then
-    tz="`uci get system.@system[0].zonename`"
+    tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   fi
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
@@ -71,10 +71,10 @@ case ${ACTION} in
     docker ${ACTION} xteve
   ;;
   "status")
-    docker ps --all -f 'name=xteve' --format '{{.State}}'
+    docker ps --all -f 'name=^/xteve$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=xteve' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/xteve$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   *)
     usage

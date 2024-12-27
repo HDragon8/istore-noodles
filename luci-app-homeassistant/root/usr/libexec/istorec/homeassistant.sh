@@ -24,7 +24,7 @@ do_install() {
     --dns=127.0.0.1 "
 
   if [ -z "$tz" ]; then
-    tz="`uci get system.@system[0].zonename`"
+    tz="`uci get system.@system[0].zonename | sed 's/ /_/g'`"
   fi
   [ -z "$tz" ] || cmd="$cmd -e TZ=$tz"
 
@@ -74,10 +74,10 @@ case ${ACTION} in
     docker ${ACTION} homeassistant
   ;;
   "status")
-    docker ps --all -f 'name=homeassistant' --format '{{.State}}'
+    docker ps --all -f 'name=^/homeassistant$' --format '{{.State}}'
   ;;
   "port")
-    docker ps --all -f 'name=homeassistant' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
+    docker ps --all -f 'name=^/homeassistant$' --format '{{.Ports}}' | grep -om1 '0.0.0.0:[0-9]*' | sed 's/0.0.0.0://'
   ;;
   "hacs-install")
     do_hacs_install
