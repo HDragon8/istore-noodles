@@ -1,58 +1,111 @@
-local reload_mosdns, readFile, writeFile = require("luci.controller.mosdns").Reload_mosdns,
-    require("luci.controller.mosdns").ReadFile, require("luci.controller.mosdns").WriteFile
+local datatypes = require "luci.cbi.datatypes"
 
-local rulePath = {
-  whiteList = "/etc/mosdns/rule/whitelist.txt",
-  blockList = "/etc/mosdns/rule/blocklist.txt",
-  hostsList = "/etc/mosdns/rule/hosts.txt",
-  redirectList = "/etc/mosdns/rule/redirect.txt",
-  cusConfig = "/etc/mosdns/cus_config.yaml"
-}
+local white_list_file = "/etc/mosdns/rule/whitelist.txt"
+local block_list_file = "/etc/mosdns/rule/blocklist.txt"
+local grey_list_file = "/etc/mosdns/rule/greylist.txt"
+local hosts_list_file = "/etc/mosdns/rule/hosts.txt"
+local redirect_list_file = "/etc/mosdns/rule/redirect.txt"
+local local_ptr_file = "/etc/mosdns/rule/local-ptr.txt"
+local ddns_list_file = "/etc/mosdns/rule/ddnslist.txt"
+local streaming_media_list_file = "/etc/mosdns/rule/streaming.txt"
 
-local m = Map("mosdns")
-local s = m:section(TypedSection, "mosdns", translate("Rule Settings"))
+m = Map("mosdns")
+
+s = m:section(TypedSection, "mosdns", translate("Rule Settings"))
 s.anonymous = true
-
-local function createTextOption(tabName, optionName, filePath, description, customDescription, rows, size)
-  local o = s:taboption(tabName, TextValue, optionName, translate(description))
-  o.rows = rows or 15 -- 使用传入的rows参数或默认值15
-  o.size = size or 15 -- 使用传入的width参数或默认值15
-  o.wrap = "off"
-  o.cfgvalue = function(self, section) return readFile(filePath) end
-  o.write = function(self, section, value) writeFile(filePath, value:gsub("\r\n", "\n")) end
-  o.remove = function(self, section, value) writeFile(filePath, "") end
-  o.validate = function(self, value)
-    return value
-  end
-  o.description = "<font color='#00bd3e'>" ..
-      translate(customDescription or "The rule list applies to both 'Default Config' and 'Custom Config' profiles.") ..
-      "</font>"
-end
 
 s:tab("white_list", translate("White Lists"))
 s:tab("block_list", translate("Block Lists"))
+s:tab("grey_list", translate("Grey Lists"))
+s:tab("ddns_list", translate("DDNS Lists"))
 s:tab("hosts_list", translate("Hosts"))
 s:tab("redirect_list", translate("Redirect"))
-s:tab("cus_config", translate("Custom Config"))
+s:tab("local_ptr_list", translate("Block PTR"))
+s:tab("streaming_media_list", translate("Streaming Media"))
 
-createTextOption("white_list", "whitelist", rulePath.whiteList,
-  "These domain names will be resolved with the highest priority<br> Please input the domain names of websites<br> Each line should contain only one website domain<br>For example: hm.baidu.com")
+o = s:taboption("white_list", TextValue, "whitelist", "", "<font color='red'>" .. translate("These domain names allow DNS resolution with the highest priority. Please input the domain names of websites, every line can input only one website domain. For example: hm.baidu.com.") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(white_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(white_list_file , value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(white_list_file , "") end
+o.validate = function(self, value)
+    return value
+end
 
-createTextOption("block_list", "blocklist", rulePath.blockList,
-  "These domain names are blocked and cannot be resolved through DNS<br>Please input the domain names of websites<br>Each line should contain only one website domain<br>For example: baidu.com")
+o = s:taboption("block_list", TextValue, "blocklist", "", "<font color='red'>" .. translate("These domains are blocked from DNS resolution. Please input the domain names of websites, every line can input only one website domain. For example: baidu.com.") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(block_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(block_list_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(block_list_file, "") end
+o.validate = function(self, value)
+    return value
+end
 
-createTextOption("hosts_list", "hosts", rulePath.hostsList, "Hosts<br>For example: baidu.com 10.0.0.1")
+o = s:taboption("grey_list", TextValue, "greylist", "", "<font color='red'>" .. translate("These domains are always resolved using remote DNS. Please input the domain names of websites, every line can input only one website domain. For example: google.com.") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(grey_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(grey_list_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(grey_list_file, "") end
+o.validate = function(self, value)
+    return value
+end
 
-createTextOption("redirect_list", "redirect", rulePath.redirectList,
-  "These domain names will be redirected<br>Requests for domain A will return records for domain B<br>For example: a.com b.com")
+o = s:taboption("ddns_list", TextValue, "ddns", "", "<font color='red'>" .. translate("These domains are always resolved using local DNS. And force TTL 5 seconds, DNS resolution results will not enter the cache. For example: myddns.example.com.") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(ddns_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(ddns_list_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(ddns_list_file, "") end
+o.validate = function(self, value)
+    return value
+end
 
-createTextOption("cus_config", "cus_config", rulePath.cusConfig,
-  "View the Custom YAML Configuration file used by this MosDNS<br>You can edit it according to your own needs",
-  "The rule list applies exclusively to 'Custom Config' profiles.", 60, 70)
+o = s:taboption("hosts_list", TextValue, "hosts", "", "<font color='red'>" .. translate("Hosts For example: baidu.com 10.0.0.1") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(hosts_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(hosts_list_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(hosts_list_file, "") end
+o.validate = function(self, value)
+    return value
+end
+
+o = s:taboption("redirect_list", TextValue, "redirect", "", "<font color='red'>" .. translate("The domain name to redirect the request to. Requests domain A, but returns records for domain B. example: a.com b.com") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(redirect_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(redirect_list_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(redirect_list_file, "") end
+o.validate = function(self, value)
+    return value
+end
+
+o = s:taboption("local_ptr_list", TextValue, "local_ptr", "", "<font color='red'>" .. translate("These domains are blocked from PTR requests") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(local_ptr_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(local_ptr_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(local_ptr_file, "") end
+o.validate = function(self, value)
+    return value
+end
+
+o = s:taboption("streaming_media_list", TextValue, "streaming_media", "", "<font color='red'>" .. translate("These domains are always resolved using Streaming Media DNS. Please input the domain names of websites, every line can input only one website domain. For example: netflix.com.") .. "</font>" .. "<font color='#00bd3e'>" .. translate("<br>The list of rules only apply to 'Default Config' profiles.") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section) return nixio.fs.readfile(streaming_media_list_file) or "" end
+o.write = function(self, section, value) nixio.fs.writefile(streaming_media_list_file, value:gsub("\r\n", "\n")) end
+o.remove = function(self, section, value) nixio.fs.writefile(streaming_media_list_file, "") end
+o.validate = function(self, value)
+    return value
+end
 
 local apply = luci.http.formvalue("cbi.apply")
 if apply then
-  reload_mosdns()
+    luci.sys.exec("/etc/init.d/mosdns reload")
 end
 
 return m

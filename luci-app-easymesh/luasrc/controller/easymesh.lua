@@ -8,6 +8,7 @@ function index()
 	end
 
 	local page
+
 	page = entry({"admin", "network", "easymesh"}, cbi("easymesh"), _("EASY MESH"), 60)
 	page.dependent = true
 	page.acl_depends = { "luci-app-easymesh" }
