@@ -43,7 +43,7 @@ git clone --depth 1 https://github.com/Lienol/openwrt-package && mv -n openwrt-p
 
 git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol applications/luci-app-dufs \
 applications/luci-app-autoreboot applications/luci-app-ramfree
-git_sparse_clone master "https://github.com/immortalwrt/packages" "impaks" net/dufs 
+git_sparse_clone master "https://github.com/immortalwrt/packages" "impaks" net/dufs lang/rust
 
 rm -rf ./*/.git & rm -f ./*/.gitattributes
 rm -rf ./*/.svn & rm -rf ./*/.github & rm -rf ./*/.gitignore
