@@ -5,13 +5,12 @@
 
 include $(TOPDIR)/rules.mk
 
-LUCI_TITLE:=luci-app-ramfree
+LUCI_TITLE:=LuCI support for Scheduled Reboot
+LUCI_DEPENDS:=+luci-compat
 LUCI_PKGARCH:=all
 PKG_VERSION:=1.0
-PKG_RELEASE:=1
+PKG_RELEASE:=8
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature
-
-
