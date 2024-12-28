@@ -38,11 +38,10 @@ git clone --depth 1 https://github.com/linkease/nas-packages && mv -n nas-packag
 git clone --depth 1 https://github.com/linkease/nas-packages-luci && mv -n nas-packages-luci/luci/* ./; rm -rf nas-packages-luci
 git clone --depth 1 https://github.com/linkease/istore && mv -n istore/luci/* ./; rm -rf istore
 git clone --depth 1 https://github.com/linkease/openwrt-app-actions && mv -n openwrt-app-actions/applications/* ./;rm -rf openwrt-app-actions
-git clone --depth 1 https://github.com/Lienol/openwrt-package && mv -n openwrt-package/{luci-app-ramfree,luci-app-timecontrol} ./; rm -rf openwrt-package
+git clone --depth 1 https://github.com/Lienol/openwrt-package && mv -n openwrt-package/luci-app-timecontrol ./; rm -rf openwrt-package
 
-svn export https://github.com/Lienol/openwrt-package/branches/other/lean/luci-app-autoreboot
-
-git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol applications/luci-app-dufs
+git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol applications/luci-app-dufs \
+applications/luci-app-autoreboot applications/luci-app-ramfree
 git_sparse_clone master "https://github.com/immortalwrt/packages" "impaks" net/dufs 
 
 rm -rf ./*/.git & rm -f ./*/.gitattributes
