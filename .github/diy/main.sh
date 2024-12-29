@@ -44,9 +44,11 @@ git clone --depth 1 https://github.com/linkease/istore && mv -n istore/luci/* ./
 git clone --depth 1 https://github.com/linkease/openwrt-app-actions && mv -n openwrt-app-actions/applications/* ./;rm -rf openwrt-app-actions
 git clone --depth 1 https://github.com/Lienol/openwrt-package && mv -n openwrt-package/luci-app-timecontrol ./; rm -rf openwrt-package
 
-git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol applications/luci-app-dufs \
+git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol \
 applications/luci-app-autoreboot applications/luci-app-ramfree
-git_sparse_clone master "https://github.com/immortalwrt/packages" "impaks" net/dufs lang/rust
+#git_sparse_clone master "https://github.com/immortalwrt/packages" "impaks" net/dufs lang/rust
+git_sparse_clone master "https://github.com/coolsnowwolf/packages" "lepaks" net/dufs lang/rust
+git_sparse_clone openwrt-23.05 "https://github.com/coolsnowwolf/luci" "leluci" applications/luci-app-dufs
 
 rm -rf ./*/.git & rm -f ./*/.gitattributes
 rm -rf ./*/.svn & rm -rf ./*/.github & rm -rf ./*/.gitignore
