@@ -76,6 +76,11 @@ sed -i -e 's/nas/services/g' -e 's/NAS/Services/g' $(grep -rl 'nas\|NAS' luci-ap
 #rm -rf luci-app-adguardhome/po/zh_Hans
 #cp -Rf luci-app-adguardhome/po/zh-cn luci-app-adguardhome/po/zh_Hans
 
+rm -rf luci-app-passwall2/po/zh_Hans
+cp -Rf luci-app-passwall2/po/zh-cn luci-app-passwall2/po/zh_Hans
+rm -rf luci-app-passwall/po/zh_Hans
+cp -Rf luci-app-passwall/po/zh-cn luci-app-passwall/po/zh_Hans
+
 #rm -rf luci-app-wxedge/po/zh_Hans
 #cp -Rf luci-app-wxedge/po/zh-cn luci-app-wxedge/po/zh_Hans
 #rm -rf luci-app-wifischedule/po/zh_Hans
