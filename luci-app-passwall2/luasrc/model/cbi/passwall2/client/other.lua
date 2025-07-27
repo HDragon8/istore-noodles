@@ -1,7 +1,7 @@
 local api = require "luci.passwall2.api"
 local appname = api.appname
 local fs = api.fs
-local has_singbox = api.finded_com("singbox")
+local has_singbox = api.finded_com("sing-box")
 local has_xray = api.finded_com("xray")
 local has_fw3 = api.is_finded("fw3")
 local has_fw4 = api.is_finded("fw4")
@@ -95,6 +95,13 @@ o.default = "1:65535"
 o:value("1:65535", translate("All"))
 o.validate = port_validate
 
+o = s:option(DummyValue, "tips", " ")
+o.rawhtml = true
+o.cfgvalue = function(t, n)
+	return string.format('<font color="red">%s</font>',
+	translate("The port settings support single ports and ranges.<br>Separate multiple ports with commas (,).<br>Example: 21,80,443,1000:2000."))
+end
+
 ---- Use nftables
 o = s:option(ListValue, "use_nft", translate("Firewall tools"))
 o.default = "0"
@@ -111,13 +118,16 @@ if (os.execute("lsmod | grep -i REDIRECT >/dev/null") == 0 and os.execute("lsmod
 	o:value("redirect", "REDIRECT")
 	o:value("tproxy", "TPROXY")
 	o:depends("ipv6_tproxy", false)
+	o.remove = function(self, section)
+		-- 禁止在隐藏时删除
+	end
 
 	o = s:option(ListValue, "_tcp_proxy_way", translate("TCP Proxy Way"))
 	o.default = "tproxy"
 	o:value("tproxy", "TPROXY")
 	o:depends("ipv6_tproxy", true)
 	o.write = function(self, section, value)
-		return self.map:set(section, "tcp_proxy_way", value)
+		self.map:set(section, "tcp_proxy_way", value)
 	end
 
 	if os.execute("lsmod | grep -i ip6table_mangle >/dev/null") == 0 or os.execute("lsmod | grep -i nft_tproxy >/dev/null") == 0 then
@@ -210,6 +220,7 @@ if has_xray then
 	o = s_xray_noise:option(ListValue, "type", translate("Type"))
 	o:value("rand", "rand")
 	o:value("str", "str")
+	o:value("hex", "hex")
 	o:value("base64", "base64")
 
 	o = s_xray_noise:option(Value, "packet", translate("Packet"))

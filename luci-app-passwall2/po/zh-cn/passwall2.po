@@ -160,8 +160,8 @@ msgstr "直连查询策略"
 msgid "Remote Query Strategy"
 msgstr "远程查询策略"
 
-msgid "Use FakeDNS work in the shunt domain that proxy."
-msgstr "需要代理的分流规则域名使用 FakeDNS。"
+msgid "Use FakeDNS work in the domain that proxy."
+msgstr "需要代理的域名使用 FakeDNS。"
 
 msgid "Domain Override"
 msgstr "域名重写"
@@ -181,6 +181,9 @@ msgstr "强制需要代理的设备使用专用 DNS 服务器。"
 msgid "Clear IPSet"
 msgstr "清空 IPSet"
 
+msgid "Clear NFTSet"
+msgstr "清空 NFTSet"
+
 msgid "Try this feature if the rule modification does not take effect."
 msgstr "如果修改规则后没有生效，请尝试此功能。"
 
@@ -199,17 +202,11 @@ msgstr "客户端DNS和默认网关必须指向本路由器。"
 msgid "If you have a wrong DNS process, the consequences are at your own risk!"
 msgstr "如果你自行配置了错误的DNS流程，后果自负！"
 
-msgid "Restore the default configuration method. Input example in the address bar:"
-msgstr "恢复默认配置方法，地址栏输入例："
-
 msgid "Hide menu method, input example in the address bar:"
 msgstr "隐藏菜单方法，地址栏输入例："
 
 msgid "After the hidden to the display, input example in the address bar:"
 msgstr "当你隐藏后想再次显示，地址栏输入例："
-
-msgid "Are you sure to reset?"
-msgstr "你确定要恢复吗？"
 
 msgid "Are you sure to hide?"
 msgstr "你确定要隐藏吗？"
@@ -234,9 +231,6 @@ msgstr "对于移动设备,可通过重新接入网络的方式清除。比如�
 
 msgid "Please make sure your device's network settings point both the DNS server and default gateway to this router, to ensure DNS queries are properly routed."
 msgstr "请确认您设备的网络设置,客户端DNS服务器和默认网关应均指向本路由器,以确保DNS查询正确路由。"
-
-msgid "Restore to default configuration:"
-msgstr "恢复默认配置："
 
 msgid "Browser access:"
 msgstr "浏览器访问："
@@ -274,11 +268,8 @@ msgstr "添加节点"
 msgid "Add the node via the link"
 msgstr "通过链接添加节点"
 
-msgid "Share Link"
-msgstr "分享链接"
-
-msgid "Not a subscription link!!!"
-msgstr "不是订阅链接！！！"
+msgid "Enter share links, one per line. Subscription links are not supported!"
+msgstr "输入分享链接，支持多个节点，每行一个。请勿输入订阅链接！"
 
 msgid "Please enter the correct link."
 msgstr "请输入正确的链接。"
@@ -367,8 +358,20 @@ msgstr "用于检测连接状态的网址。"
 msgid "Probe Interval"
 msgstr "探测间隔"
 
-msgid "The interval between initiating probes. Every time this time elapses, a server status check is performed on a server. The time format is numbers + units, such as '10s', '2h45m', and the supported time units are <code>ns</code>, <code>us</code>, <code>ms</code>, <code>s</code>, <code>m</code>, <code>h</code>, which correspond to nanoseconds, microseconds, milliseconds, seconds, minutes, and hours, respectively."
-msgstr "发起探测的间隔。每经过这个时间，就会对一个服务器进行服务器状态检测。时间格式为数字+单位，比如<code>&quot;10s&quot;</code>, <code>&quot;2h45m&quot;</code>，支持的时间单位有 <code>ns</code>，<code>us</code>，<code>ms</code>，<code>s</code>，<code>m</code>，<code>h</code>，分别对应纳秒、微秒、毫秒、秒、分、时。"
+msgid "The interval between initiating probes."
+msgstr "发起探测的间隔。"
+
+msgid "The time format is numbers + units, such as '10s', '2h45m', and the supported time units are <code>s</code>, <code>m</code>, <code>h</code>, which correspond to seconds, minutes, and hours, respectively."
+msgstr "时间格式为数字+单位，比如<code>&quot;10s&quot;</code>, <code>&quot;2h45m&quot;</code>，支持的时间单位有 <code>s</code>，<code>m</code>，<code>h</code>，分别对应秒、分、时。"
+
+msgid "When the unit is not filled in, it defaults to seconds."
+msgstr "未填写单位时，默认为秒。"
+
+msgid "Preferred Node Count"
+msgstr "优选节点数量"
+
+msgid "The load balancer selects the optimal number of nodes, and traffic is randomly distributed among them."
+msgstr "负载均衡器选出最优节点的个数，流量将在这几个节点中随机分配。"
 
 msgid "Shunt"
 msgstr "分流"
@@ -418,8 +421,8 @@ msgstr "IPOnDemand：当匹配时碰到任何基于 IP 的规则，将域名立�
 msgid "Load balancing node list"
 msgstr "负载均衡节点列表"
 
-msgid "Load balancing node list, <a target='_blank' href='https://toutyrater.github.io/routing/balance2.html'>document</a>"
-msgstr "负载均衡节点列表，<a target='_blank' href='https://toutyrater.github.io/routing/balance2.html'>文档原理</a>"
+msgid "Load balancing node list, <a target='_blank' href='https://xtls.github.io/config/routing.html#balancerobject'>document</a>"
+msgstr "负载均衡节点列表，<a target='_blank' href='https://xtls.github.io/config/routing.html#balancerobject'>文档原理</a>"
 
 msgid "From Share URL"
 msgstr "导入分享URL"
@@ -429,6 +432,9 @@ msgstr "导出分享URL"
 
 msgid "Generate QRCode"
 msgstr "生成二维码"
+
+msgid "Export Config File"
+msgstr "导出配置文件"
 
 msgid "Import Finished"
 msgstr "导入完成："
@@ -616,6 +622,9 @@ msgstr "填写你不希望被代理转发的端口，优先级最高。"
 msgid "If you don't want to let the device in the list to go proxy, please choose all."
 msgstr "如果您不想让列表中的设备走代理，请选择全部。"
 
+msgid "The port settings support single ports and ranges.<br>Separate multiple ports with commas (,).<br>Example: 21,80,443,1000:2000."
+msgstr "以上端口设置支持单端口和端口范围。<br>多个端口用英文逗号(,)隔开。<br>例：21,80,443,1000:2000。"
+
 msgid "TCP Proxy Drop Ports"
 msgstr "TCP转发屏蔽端口"
 
@@ -717,6 +726,9 @@ msgstr "请输入节点关键字，注意区分空格、大写和小写。"
 
 msgid "Enable Load Balancing"
 msgstr "开启负载均衡"
+
+msgid "Console Login Auth"
+msgstr "控制台登录认证"
 
 msgid "Console Username"
 msgstr "控制台账号"
@@ -919,6 +931,9 @@ msgstr "节点订阅"
 msgid "Subscribe Remark"
 msgstr "订阅备注（机场）"
 
+msgid "Subscribe Info"
+msgstr "订阅信息"
+
 msgid "Subscribe URL"
 msgstr "订阅网址"
 
@@ -942,6 +957,9 @@ msgstr "删除所有订阅节点"
 
 msgid "Delete the subscribed node"
 msgstr "删除已订阅的节点"
+
+msgid "Are you sure you want to delete all subscribed nodes?"
+msgstr "您确定要删除所有已订阅的节点吗？"
 
 msgid "Manual subscription All"
 msgstr "手动订阅全部"
@@ -1159,6 +1177,9 @@ msgstr "系统接口名称"
 msgid "Decimal numbers separated by \",\" or Base64-encoded strings."
 msgstr "用“,”隔开的十进制数字或 Base64 编码字符串。"
 
+msgid "Camouflage Domain"
+msgstr "伪装域名"
+
 msgid "Camouflage Type"
 msgstr "伪装类型"
 
@@ -1173,6 +1194,9 @@ msgstr "原版Trojan只支持'tls'，请选择'tls'。"
 
 msgid "Transfer mode"
 msgstr "传输模式"
+
+msgid "Do not send server name in ClientHello."
+msgstr "不要在 ClientHello 中发送服务器名称."
 
 msgid "Domain"
 msgstr "域名"
@@ -1234,8 +1258,11 @@ msgstr "TUIC socks5 服务器可以从外部接收的最大数据包大小（以
 msgid "Set if the listening socket should be dual-stack"
 msgstr "设置监听套接字为双栈"
 
-msgid "<br />none: default, no masquerade, data sent is packets with no characteristics.<br />srtp: disguised as an SRTP packet, it will be recognized as video call data (such as FaceTime).<br />utp: packets disguised as uTP will be recognized as bittorrent downloaded data.<br />wechat-video: packets disguised as WeChat video calls.<br />dtls: disguised as DTLS 1.2 packet.<br />wireguard: disguised as a WireGuard packet. (not really WireGuard protocol)"
-msgstr "<br />none：默认值，不进行伪装，发送的数据是没有特征的数据包。<br />srtp：伪装成 SRTP 数据包，会被识别为视频通话数据（如 FaceTime）。<br />utp：伪装成 uTP 数据包，会被识别为 BT 下载数据。<br />wechat-video：伪装成微信视频通话的数据包。<br />dtls：伪装成 DTLS 1.2 数据包。<br />wireguard：伪装成 WireGuard 数据包。(并不是真正的 WireGuard 协议)"
+msgid "<br />none: default, no masquerade, data sent is packets with no characteristics.<br />srtp: disguised as an SRTP packet, it will be recognized as video call data (such as FaceTime).<br />utp: packets disguised as uTP will be recognized as bittorrent downloaded data.<br />wechat-video: packets disguised as WeChat video calls.<br />dtls: disguised as DTLS 1.2 packet.<br />wireguard: disguised as a WireGuard packet. (not really WireGuard protocol)<br />dns: Disguising traffic as DNS requests."
+msgstr "<br />none：默认值，不进行伪装，发送的数据是没有特征的数据包。<br />srtp：伪装成 SRTP 数据包，会被识别为视频通话数据（如 FaceTime）。<br />utp：伪装成 uTP 数据包，会被识别为 BT 下载数据。<br />wechat-video：伪装成微信视频通话的数据包。<br />dtls：伪装成 DTLS 1.2 数据包。<br />wireguard：伪装成 WireGuard 数据包。(并不是真正的 WireGuard 协议)<br />dns：把流量伪装成 DNS 请求。"
+
+msgid "Use it together with the DNS disguised type. You can fill in any domain."
+msgstr "配合伪装类型 DNS 使用，可随便填一个域名。"
 
 msgid "A legal file path. This file must not exist before running."
 msgstr "一个合法的文件路径。在运行之前，这个文件必须不存在。"
@@ -1417,8 +1444,8 @@ msgstr "客户端文件不适合当前设备。"
 msgid "Can't move new file to path: %s"
 msgstr "无法移动新文件到：%s"
 
-msgid "An <a target='_blank' href='https://xtls.github.io/config/transports/splithttp.html#extra'>XHTTP extra object</a> in raw json"
-msgstr "一个 json 格式的 <a target='_blank' href='https://xtls.github.io/config/transports/splithttp.html#extra'>XHTTP extra object</a>"
+msgid "An XHttpObject in JSON format, used for sharing."
+msgstr "JSON 格式的 XHttpObject，用来实现分享。"
 
 msgid "Enable Mux.Cool"
 msgstr "启用 Mux.Cool"
@@ -1428,9 +1455,6 @@ msgstr "最大并发连接数"
 
 msgid "XUDP Mux concurrency"
 msgstr "XUDP 最大并发连接数"
-
-msgid "Mux idle timeout"
-msgstr "最大闲置时间"
 
 msgid "Padding"
 msgstr "填充"
@@ -1449,9 +1473,6 @@ msgstr "推荐值：Sec-WebSocket-Protocol"
 
 msgid "Health check"
 msgstr "健康检查"
-
-msgid "Idle timeout"
-msgstr "闲置时间"
 
 msgid "Health check timeout"
 msgstr "检查超时时间"
@@ -1494,9 +1515,6 @@ msgstr "空闲超时 "
 
 msgid "Hop Interval"
 msgstr "端口跳跃时间 "
-
-msgid "Additional ports for hysteria hop"
-msgstr "端口跳跃额外端口"
 
 msgid "HeartbeatPeriod(second)"
 msgstr "心跳周期（单位：秒）"
@@ -1611,3 +1629,141 @@ msgstr "仅 IPv4"
 
 msgid "IPv6 Only"
 msgstr "仅 IPv6"
+
+msgid "Maintain"
+msgstr "维护"
+
+msgid "Backup and Restore"
+msgstr "备份还原"
+
+msgid "Backup or Restore Client and Server Configurations."
+msgstr "备份或还原客户端及服务端配置。"
+
+msgid "Note: Restoring configurations across different versions may cause compatibility issues."
+msgstr "注意：不同版本间的配置恢复可能会导致兼容性问题。"
+
+msgid "Create Backup File"
+msgstr "创建备份文件"
+
+msgid "Restore Backup File"
+msgstr "恢复备份文件"
+
+msgid "DL Backup"
+msgstr "下载备份"
+
+msgid "RST Backup"
+msgstr "恢复备份"
+
+msgid "UL Restore"
+msgstr "上传恢复"
+
+msgid "CLOSE WIN"
+msgstr "关闭窗口"
+
+msgid "Restore to default configuration"
+msgstr "恢复默认配置"
+
+msgid "Do Reset"
+msgstr "执行重置"
+
+msgid "Please select a file first."
+msgstr "请先选择一个文件。"
+
+msgid "Invalid file type. Please upload a .tar.gz file."
+msgstr "文件类型无效，请上传一个 .tar.gz 文件。"
+
+msgid "File size exceeds 10MB limit."
+msgstr "文件大小超过 10MB 限制。"
+
+msgid "Do you want to restore the client to default settings?"
+msgstr "是否要恢复客户端默认配置？"
+
+msgid "Are you sure you want to restore the client to default settings?"
+msgstr "是否真的要恢复客户端默认配置？"
+
+msgid "_urltest"
+msgstr "URLTest"
+
+msgid "URLTest node list"
+msgstr "URLTest 节点列表"
+
+msgid "List of nodes to test, <a target='_blank' href='https://sing-box.sagernet.org/configuration/outbound/urltest'>document</a>"
+msgstr "要测试的节点列表，<a target='_blank' href='https://sing-box.sagernet.org/zh/configuration/outbound/urltest'>文档原理</a>"
+
+msgid "Test interval"
+msgstr "测试间隔"
+
+msgid "Test interval must be less or equal than idle timeout."
+msgstr "测试间隔时间必须小于或等于空闲超时时间。"
+
+msgid "Test tolerance"
+msgstr "测试容差"
+
+msgid "The test tolerance in milliseconds."
+msgstr "测试容差时间（单位：毫秒）。"
+
+msgid "Idle timeout"
+msgstr "空闲超时"
+
+msgid "The idle timeout."
+msgstr "空闲超时时间。"
+
+msgid "Interrupt existing connections"
+msgstr "中断现有连接"
+
+msgid "Interrupt existing connections when the selected outbound has changed."
+msgstr "当选择的出站发生变化时中断现有连接。"
+
+msgid "Port hopping range"
+msgstr "端口跳跃范围"
+
+msgid "Format as 1000:2000 or 1000-2000 Multiple groups are separated by commas (,)."
+msgstr "格式为：1000:2000 或 1000-2000 多组时用逗号(,)隔开。"
+
+msgid "Use Custom Config"
+msgstr "使用自定义配置"
+
+msgid "Custom Config"
+msgstr "自定义配置"
+
+msgid "Must be JSON text!"
+msgstr "必须是 JSON 文本内容！"
+
+msgid "Geo View"
+msgstr "Geo 查询"
+
+msgid "Query"
+msgstr "查询"
+
+msgid "Querying"
+msgstr "查询中"
+
+msgid "Please enter query content!"
+msgstr "请输入查询内容！"
+
+msgid "No results were found!"
+msgstr "未找到任何结果！"
+
+msgid "Domain/IP Query"
+msgstr "域名/IP 查询"
+
+msgid "GeoIP/Geosite Query"
+msgstr "GeoIP/Geosite 查询"
+
+msgid "Enter a domain or IP to query the Geo rule list they belong to."
+msgstr "输入域名/IP，查询它们所在的 Geo 规则列表。"
+
+msgid "Enter a GeoIP or Geosite to extract the domains/IPs they contain. Format: geoip:cn or geosite:gfw"
+msgstr "输入 GeoIP/Geosite，提取它们所包含的域名/IP。格式：geoip:cn 或 geosite:gfw"
+
+msgid "Tips:"
+msgstr "小贴士："
+
+msgid "By entering a domain or IP, you can query the Geo rule list they belong to."
+msgstr "可以通过输入域名/IP，查询它们所在的 Geo 规则列表。"
+
+msgid "By entering a GeoIP or Geosite, you can extract the domains/IPs they contain."
+msgstr "可以通过输入 GeoIP/Geosite，提取它们所包含的域名/IP。"
+
+msgid "Use the GeoIP/Geosite query function to verify if the entered Geo rules are correct."
+msgstr "利用 GeoIP/Geosite 查询功能，可以验证输入的 Geo 规则是否正确。"

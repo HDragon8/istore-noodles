@@ -18,19 +18,22 @@ local function _n(name)
 end
 
 local ss_method_list = {
-	"aes-128-gcm", "aes-256-gcm", "chacha20-poly1305", "chacha20-ietf-poly1305", "xchacha20-poly1305", "xchacha20-ietf-poly1305", "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm", "2022-blake3-chacha20-poly1305"
+	"none", "plain", "aes-128-gcm", "aes-256-gcm", "chacha20-poly1305", "chacha20-ietf-poly1305", "xchacha20-poly1305", "xchacha20-ietf-poly1305", "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm", "2022-blake3-chacha20-poly1305"
 }
 
 local security_list = { "none", "auto", "aes-128-gcm", "chacha20-poly1305", "zero" }
 
 local header_type_list = {
-	"none", "srtp", "utp", "wechat-video", "dtls", "wireguard"
+	"none", "srtp", "utp", "wechat-video", "dtls", "wireguard", "dns"
 }
 
 local xray_version = api.get_app_version("xray")
 -- [[ Xray ]]
 
 s.fields["type"]:value(type_name, "Xray")
+if not s.fields["type"].default then
+	s.fields["type"].default = type_name
+end
 
 o = s:option(ListValue, _n("protocol"), translate("Protocol"))
 o:value("vmess", translate("Vmess"))
@@ -95,7 +98,7 @@ m.uci:foreach(appname, "socks", function(s)
 end)
 
 -- 负载均衡列表
-local o = s:option(DynamicList, _n("balancing_node"), translate("Load balancing node list"), translate("Load balancing node list, <a target='_blank' href='https://toutyrater.github.io/routing/balance2.html'>document</a>"))
+local o = s:option(DynamicList, _n("balancing_node"), translate("Load balancing node list"), translate("Load balancing node list, <a target='_blank' href='https://xtls.github.io/config/routing.html#balancerobject'>document</a>"))
 o:depends({ [_n("protocol")] = "_balancing" })
 for k, v in pairs(nodes_table) do o:value(v.id, v.remark) end
 
@@ -104,7 +107,8 @@ o:depends({ [_n("protocol")] = "_balancing" })
 o:value("random")
 o:value("roundRobin")
 o:value("leastPing")
-o.default = "leastPing"
+o:value("leastLoad")
+o.default = "leastLoad"
 
 -- Fallback Node
 if api.compare_versions(xray_version, ">=", "1.8.10") then
@@ -133,6 +137,7 @@ end
 -- 探测地址
 local ucpu = s:option(Flag, _n("useCustomProbeUrl"), translate("Use Custome Probe URL"), translate("By default the built-in probe URL will be used, enable this option to use a custom probe URL."))
 ucpu:depends({ [_n("balancingStrategy")] = "leastPing" })
+ucpu:depends({ [_n("balancingStrategy")] = "leastLoad" })
 
 local pu = s:option(Value, _n("probeUrl"), translate("Probe URL"))
 pu:depends({ [_n("useCustomProbeUrl")] = true })
@@ -148,8 +153,12 @@ pu.description = translate("The URL used to detect the connection status.")
 -- 探测间隔
 local pi = s:option(Value, _n("probeInterval"), translate("Probe Interval"))
 pi:depends({ [_n("balancingStrategy")] = "leastPing" })
+pi:depends({ [_n("balancingStrategy")] = "leastLoad" })
 pi.default = "1m"
-pi.description = translate("The interval between initiating probes. Every time this time elapses, a server status check is performed on a server. The time format is numbers + units, such as '10s', '2h45m', and the supported time units are <code>ns</code>, <code>us</code>, <code>ms</code>, <code>s</code>, <code>m</code>, <code>h</code>, which correspond to nanoseconds, microseconds, milliseconds, seconds, minutes, and hours, respectively.")
+pi.placeholder = "1m"
+pi.description = translate("The interval between initiating probes.") .. "<br>" ..
+		translate("The time format is numbers + units, such as '10s', '2h45m', and the supported time units are <code>s</code>, <code>m</code>, <code>h</code>, which correspond to seconds, minutes, and hours, respectively.") .. "<br>" ..
+		translate("When the unit is not filled in, it defaults to seconds.")
 
 if api.compare_versions(xray_version, ">=", "1.8.12") then
 	ucpu:depends({ [_n("protocol")] = "_balancing" })
@@ -158,6 +167,12 @@ else
 	ucpu:depends({ [_n("balancingStrategy")] = "leastPing" })
 	pi:depends({ [_n("balancingStrategy")] = "leastPing" })
 end
+
+o = s:option(Value, _n("expected"), translate("Preferred Node Count"))
+o:depends({ [_n("balancingStrategy")] = "leastLoad" })
+o.datatype = "uinteger"
+o.default = "2"
+o.description = translate("The load balancer selects the optimal number of nodes, and traffic is randomly distributed among them.")
 
 
 -- [[ 分流模块 ]]
@@ -453,9 +468,12 @@ o:depends({ [_n("tcp_guise")] = "http" })
 
 -- [[ mKCP部分 ]]--
 
-o = s:option(ListValue, _n("mkcp_guise"), translate("Camouflage Type"), translate('<br />none: default, no masquerade, data sent is packets with no characteristics.<br />srtp: disguised as an SRTP packet, it will be recognized as video call data (such as FaceTime).<br />utp: packets disguised as uTP will be recognized as bittorrent downloaded data.<br />wechat-video: packets disguised as WeChat video calls.<br />dtls: disguised as DTLS 1.2 packet.<br />wireguard: disguised as a WireGuard packet. (not really WireGuard protocol)'))
+o = s:option(ListValue, _n("mkcp_guise"), translate("Camouflage Type"), translate('<br />none: default, no masquerade, data sent is packets with no characteristics.<br />srtp: disguised as an SRTP packet, it will be recognized as video call data (such as FaceTime).<br />utp: packets disguised as uTP will be recognized as bittorrent downloaded data.<br />wechat-video: packets disguised as WeChat video calls.<br />dtls: disguised as DTLS 1.2 packet.<br />wireguard: disguised as a WireGuard packet. (not really WireGuard protocol)<br />dns: Disguising traffic as DNS requests.'))
 for a, t in ipairs(header_type_list) do o:value(t) end
 o:depends({ [_n("transport")] = "mkcp" })
+
+o = s:option(Value, _n("mkcp_domain"), translate("Camouflage Domain"), translate("Use it together with the DNS disguised type. You can fill in any domain."))
+o:depends({ [_n("mkcp_guise")] = "dns" })
 
 o = s:option(Value, _n("mkcp_mtu"), translate("KCP MTU"))
 o.default = "1350"
@@ -569,14 +587,16 @@ o = s:option(Value, _n("xhttp_path"), translate("XHTTP Path"))
 o.placeholder = "/"
 o:depends({ [_n("transport")] = "xhttp" })
 
-o = s:option(TextValue, _n("xhttp_extra"), translate("XHTTP Extra"), translate("An <a target='_blank' href='https://xtls.github.io/config/transports/splithttp.html#extra'>XHTTP extra object</a> in raw json"))
+o = s:option(Flag, _n("use_xhttp_extra"), translate("XHTTP Extra"))
+o.default = "0"
 o:depends({ [_n("transport")] = "xhttp" })
+
+o = s:option(TextValue, _n("xhttp_extra"), " ", translate("An XHttpObject in JSON format, used for sharing."))
+o:depends({ [_n("use_xhttp_extra")] = true })
 o.rows = 15
 o.wrap = "off"
 o.custom_write = function(self, section, value)
-
 	m:set(section, self.option:sub(1 + #option_prefix), value)
-
 	local success, data = pcall(jsonc.parse, value)
 	if success and data then
 		local address = (data.extra and data.extra.downloadSettings and data.extra.downloadSettings.address)
@@ -597,6 +617,10 @@ o.validate = function(self, value)
 	end
 	return value
 end
+o.custom_remove = function(self, section, value)
+	m:del(section, self.option:sub(1 + #option_prefix))
+	m:del(section, "download_address")
+end
 
 -- [[ Mux.Cool ]]--
 o = s:option(Flag, _n("mux"), "Mux", translate("Enable Mux.Cool"))
@@ -616,6 +640,7 @@ o = s:option(Flag, _n("xmux"), "XUDP Mux")
 o.default = 1
 o:depends({ [_n("protocol")] = "vless", [_n("flow")] = "xtls-rprx-vision" })
 o:depends({ [_n("protocol")] = "vless", [_n("flow")] = "xtls-rprx-vision-udp443" })
+o:depends({ [_n("protocol")] = "shadowsocks" })
 
 o = s:option(Value, _n("xudp_concurrency"), translate("XUDP Mux concurrency"))
 o.default = 8

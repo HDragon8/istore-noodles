@@ -3,19 +3,35 @@
 . /lib/functions.sh
 . /usr/share/openclash/ruby.sh
 . /usr/share/openclash/log.sh
+. /usr/share/openclash/openclash_curl.sh
 
-   set_lock() {
-      exec 877>"/tmp/lock/openclash_rule.lock" 2>/dev/null
-      flock -x 877 2>/dev/null
-   }
+set_lock() {
+   exec 877>"/tmp/lock/openclash_rule.lock" 2>/dev/null
+   flock -x 877 2>/dev/null
+}
 
-   del_lock() {
-      flock -u 877 2>/dev/null
-      rm -rf "/tmp/lock/openclash_rule.lock"
-   }
+del_lock() {
+   flock -u 877 2>/dev/null
+   rm -rf "/tmp/lock/openclash_rule.lock" 2>/dev/null
+}
 
-   yml_other_rules_dl()
-   {
+set_lock
+
+JOB_COUNTER_FILE="/tmp/openclash_jobs"
+
+inc_job_counter() {
+   flock -x 999
+   local cnt=0
+   [ -f "$JOB_COUNTER_FILE" ] && cnt=$(cat "$JOB_COUNTER_FILE")
+   cnt=$((cnt+1))
+   echo "$cnt" > "$JOB_COUNTER_FILE"
+   flock -u 999
+}
+exec 999>"/tmp/lock/openclash_jobs.lock"
+inc_job_counter
+
+yml_other_rules_dl()
+{
    local section="$1"
    local enabled config
    config_get_bool "enabled" "$section" "enabled" "1"
@@ -36,17 +52,18 @@
    if [ "$rule_name" = "lhie1" ]; then
       if [ "$github_address_mod" != "0" ]; then
          if [ "$github_address_mod" == "https://cdn.jsdelivr.net/" ] || [ "$github_address_mod" == "https://fastly.jsdelivr.net/" ] || [ "$github_address_mod" == "https://testingcf.jsdelivr.net/" ]; then
-            curl -SsL --connect-timeout 30 -m 60 --speed-time 30 --speed-limit 1 --retry 2 "$github_address_mod"gh/dler-io/Rules@master/Clash/Rule.yaml -o /tmp/rules.yaml 2>&1 |sed ':a;N;$!ba; s/\n/ /g' | awk -v time="$(date "+%Y-%m-%d %H:%M:%S")" -v file="/tmp/rules.yaml" '{print time "【" file "】Download Failed:【"$0"】"}' >> "$LOG_FILE"
+            DOWNLOAD_URL="${github_address_mod}gh/dler-io/Rules@master/Clash/Rule.yaml"
          else
-            curl -SsL --connect-timeout 30 -m 60 --speed-time 30 --speed-limit 1 --retry 2 "$github_address_mod"https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Rule.yaml -o /tmp/rules.yaml 2>&1 |sed ':a;N;$!ba; s/\n/ /g' | awk -v time="$(date "+%Y-%m-%d %H:%M:%S")" -v file="/tmp/rules.yaml" '{print time "【" file "】Download Failed:【"$0"】"}' >> "$LOG_FILE"
+            DOWNLOAD_URL="${github_address_mod}https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Rule.yaml"
          fi
       else
-         curl -SsL --connect-timeout 30 -m 60 --speed-time 30 --speed-limit 1 --retry 2 https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Rule.yaml -o /tmp/rules.yaml 2>&1 |sed ':a;N;$!ba; s/\n/ /g' | awk -v time="$(date "+%Y-%m-%d %H:%M:%S")" -v file="/tmp/rules.yaml" '{print time "【" file "】Download Failed:【"$0"】"}' >> "$LOG_FILE"
+         DOWNLOAD_URL="https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Rule.yaml"
       fi
-      sed -i '1i rules:' /tmp/rules.yaml
    fi
-   if [ -s "/tmp/rules.yaml" ]; then
+   DOWNLOAD_FILE_CURL "$DOWNLOAD_URL" "/tmp/rules.yaml"
+   if [ "$?" -eq 0 ] && [ -s "/tmp/rules.yaml" ]; then
       LOG_OUT "Download Successful, Start Preprocessing Rule File..."
+      sed -i '1i rules:' /tmp/rules.yaml
       ruby -ryaml -rYAML -I "/usr/share/openclash" -E UTF-8 -e "
       begin
       YAML.load_file('/tmp/rules.yaml');
@@ -115,53 +132,67 @@
    else
       LOG_OUT "Other Rules【$rule_name】Update Error, Please Try Again Later..."
    fi
-   }
-   
-   LOG_FILE="/tmp/openclash.log"
-   RUlE_SOURCE=$(uci get openclash.config.rule_source 2>/dev/null)
-   github_address_mod=$(uci -q get openclash.config.github_address_mod || echo 0)
-   set_lock
-   
-   if [ "$RUlE_SOURCE" = "0" ]; then
-      LOG_OUT "Other Rules Not Enable, Update Stop!"
-   else
-      OTHER_RULE_FILE="/tmp/other_rule.yaml"
-      CONFIG_FILE=$(uci get openclash.config.config_path 2>/dev/null)
-      CONFIG_NAME=$(echo "$CONFIG_FILE" |awk -F '/' '{print $5}' 2>/dev/null)
-      restart=0
-   
-      if [ -z "$CONFIG_FILE" ]; then
-         for file_name in /etc/openclash/config/*
-         do
-            if [ -f "$file_name" ]; then
-               CONFIG_FILE=$file_name
-               CONFIG_NAME=$(echo "$CONFIG_FILE" |awk -F '/' '{print $5}' 2>/dev/null)
-               break
-            fi
-         done
-      fi
+}
 
-      if [ -z "$CONFIG_NAME" ]; then
-         CONFIG_FILE="/etc/openclash/config/config.yaml"
-         CONFIG_NAME="config.yaml"
-      fi
-      
-      config_load "openclash"
-      config_foreach yml_other_rules_dl "other_rules" "$CONFIG_NAME"
-      if [ -z "$rule_name" ]; then
-        LOG_OUT "Get Other Rules Settings Faild, Update Stop!"
-      fi
-      if [ "$restart" -eq 1 ] && [ "$(unify_ps_prevent)" -eq 0 ] && [ "$(find /tmp/lock/ |grep -v "openclash.lock" |grep -c "openclash")" -le 1 ]; then
+LOG_FILE="/tmp/openclash.log"
+RUlE_SOURCE=$(uci get openclash.config.rule_source 2>/dev/null)
+github_address_mod=$(uci -q get openclash.config.github_address_mod || echo 0)
+restart=0
+
+if [ "$RUlE_SOURCE" = "0" ]; then
+   LOG_OUT "Other Rules Not Enable, Update Stop!"
+else
+   OTHER_RULE_FILE="/tmp/other_rule.yaml"
+   CONFIG_FILE=$(uci get openclash.config.config_path 2>/dev/null)
+   CONFIG_NAME=$(echo "$CONFIG_FILE" |awk -F '/' '{print $5}' 2>/dev/null)
+
+   if [ -z "$CONFIG_FILE" ]; then
+      for file_name in /etc/openclash/config/*
+      do
+         if [ -f "$file_name" ]; then
+            CONFIG_FILE=$file_name
+            CONFIG_NAME=$(echo "$CONFIG_FILE" |awk -F '/' '{print $5}' 2>/dev/null)
+            break
+         fi
+      done
+   fi
+
+   if [ -z "$CONFIG_NAME" ]; then
+      CONFIG_FILE="/etc/openclash/config/config.yaml"
+      CONFIG_NAME="config.yaml"
+   fi
+   
+   config_load "openclash"
+   config_foreach yml_other_rules_dl "other_rules" "$CONFIG_NAME"
+   if [ -z "$rule_name" ]; then
+     LOG_OUT "Get Other Rules Settings Faild, Update Stop!"
+   fi
+fi
+
+dec_job_counter_and_restart() {
+   flock -x 999
+   local cnt=0
+   [ -f "$JOB_COUNTER_FILE" ] && cnt=$(cat "$JOB_COUNTER_FILE")
+   cnt=$((cnt-1))
+   [ $cnt -lt 0 ] && cnt=0
+   echo "$cnt" > "$JOB_COUNTER_FILE"
+   if [ $cnt -eq 0 ]; then
+      if [ "$restart" -eq 1 ] && [ "$(unify_ps_prevent)" -eq 0 ]; then
          /etc/init.d/openclash restart >/dev/null 2>&1 &
-      elif [ "$restart" -eq 0 ] && [ "$(unify_ps_prevent)" -eq 0 ] && [ "$(find /tmp/lock/ |grep -v "openclash.lock" |grep -c "openclash")" -le 1 ] && [ "$(uci -q get openclash.config.restart)" -eq 1 ]; then
+      elif [ "$restart" -eq 0 ] && [ "$(unify_ps_prevent)" -eq 0 ] && [ "$(uci -q get openclash.config.restart)" -eq 1 ]; then
          /etc/init.d/openclash restart >/dev/null 2>&1 &
          uci -q set openclash.config.restart=0
          uci -q commit openclash
-      elif [ "$restart" -eq 1 ] && [ "$(unify_ps_prevent)" -eq 0 ]; then
+      elif [ "$restart" -eq 1 ]; then
          uci -q set openclash.config.restart=1
          uci -q commit openclash
       fi
+      rm -rf "$JOB_COUNTER_FILE" >/dev/null 2>&1
    fi
-   rm -rf /tmp/rules.yaml >/dev/null 2>&1
-   SLOG_CLEAN
-   del_lock
+   flock -u 999
+}
+
+rm -rf /tmp/rules.yaml >/dev/null 2>&1
+SLOG_CLEAN
+dec_job_counter_and_restart
+del_lock

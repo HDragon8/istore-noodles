@@ -9,7 +9,7 @@
 'require view';
 
 /* Thanks to luci-app-aria2 */
-var css = '				\
+const css = '				\
 #log_textarea {				\
 	padding: 10px;			\
 	text-align: left;		\
@@ -23,7 +23,7 @@ var css = '				\
 	background-color: #33ccff;	\
 }';
 
-var hm_dir = '/var/run/fchomo';
+const hm_dir = '/var/run/fchomo';
 
 function getRuntimeLog(name, filename) {
 	const callLogClean = rpc.declare({
@@ -33,22 +33,22 @@ function getRuntimeLog(name, filename) {
 		expect: { '': {} }
 	});
 
-	var log_textarea = E('div', { 'id': 'log_textarea' },
+	let log_textarea = E('div', { 'id': 'log_textarea' },
 		E('pre', {
 			'class': 'spinning'
 		}, _('Collecting data...'))
 	);
 
-	var log;
+	let log;
 	poll.add(L.bind(function() {
 		return fs.read_direct(String.format('%s/%s.log', hm_dir, filename), 'text')
-		.then(function(res) {
+		.then((res) => {
 			log = E('pre', { 'wrap': 'pre' }, [
 				res.trim() || _('Log is empty.')
 			]);
 
 			dom.content(log_textarea, log);
-		}).catch(function(err) {
+		}).catch((err) => {
 			if (err.toString().includes('NotFoundError'))
 				log = E('pre', { 'wrap': 'pre' }, [
 					_('Log file does not exist.')
@@ -86,21 +86,21 @@ function getRuntimeLog(name, filename) {
 }
 
 return view.extend({
-	render: function(data) {
+	render(data) {
 		let m, s, o, ss, so;
 
 		m = new form.Map('fchomo');
 
 		s = m.section(form.NamedSection, 'config', 'fchomo');
 
-		/* FullCombo Mihomo START */
-		s.tab('fchomo', _('FullCombo Mihomo'));
+		/* FullCombo Shark! START */
+		s.tab('fchomo', _('FullCombo Shark!'));
 		o = s.taboption('fchomo', form.SectionValue, '_fchomo', form.NamedSection, 'config', null);
 		ss = o.subsection;
 
 		so = ss.option(form.DummyValue, '_fchomo_logview');
-		so.render = L.bind(getRuntimeLog, so, _('FullCombo Mihomo'), 'fchomo');
-		/* FullCombo Mihomo END */
+		so.render = L.bind(getRuntimeLog, so, _('FullCombo Shark!'), 'fchomo');
+		/* FullCombo Shark! END */
 
 		/* Mihomo client START */
 		s.tab('mihomo_c', _('Mihomo client'));

@@ -66,10 +66,10 @@ function act_ping()
 		socket:setopt("socket", "sndtimeo", 3)
 		e.socket = socket:connect(domain, port)
 		socket:close()
-		-- 	e.ping = luci.sys.exec("ping -c 1 -W 1 %q 2>&1 | grep -o 'time=[0-9]*.[0-9]' | awk -F '=' '{print$2}'" % domain)
-		-- 	if (e.ping == "") then
 		e.ping = luci.sys.exec(string.format("echo -n $(tcping -q -c 1 -i 1 -t 2 -p %s %s 2>&1 | grep -o 'time=[0-9]*' | awk -F '=' '{print $2}') 2>/dev/null", port, domain))
-		-- 	end
+		if (e.ping == "") then
+			e.ping = luci.sys.exec("echo -n $(ping -c 1 -W 1 %q 2>&1 | grep -o 'time=[0-9]*' | awk -F '=' '{print $2}') 2>/dev/null" % domain)
+		end
 	end
 	if (iret == 0) then
 		luci.sys.call(" ipset del ss_spec_wan_ac " .. domain)
@@ -96,7 +96,7 @@ function check_port()
 	local retstring = "<br /><br />"
 	local s
 	local server_name = ""
-	local uci = luci.model.uci.cursor()
+	local uci = require "luci.model.uci".cursor()
 	local iret = 1
 	uci:foreach("shadowsocksr", "servers", function(s)
 		if s.alias then
@@ -151,7 +151,7 @@ function create_backup()
 		"/etc/config/shadowsocksr",
 		"/etc/ssrplus/*"
 	}
-	local date = os.date("%Y%m%d")
+	local date = os.date("%Y-%m-%d-%H-%M-%S")
 	local tar_file = "/tmp/shadowsocksr-" .. date .. "-backup.tar.gz"
 	nixio.fs.remove(tar_file)
 	local cmd = "tar -czf " .. tar_file .. " " .. table.concat(backup_files, " ")
