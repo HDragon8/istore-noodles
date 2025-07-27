@@ -17,11 +17,11 @@ mv -n `find $1/* -maxdepth 0 -type d` ./
 rm -rf $1
 }
 git clone --depth 1 https://github.com/HDragon8/A-default-settings A-default-settings
-git clone --depth 1 https://github.com/HDragon8/iS-default-settings iS-default-settings
+#git clone --depth 1 https://github.com/HDragon8/iS-default-settings iS-default-settings
 
 git clone --depth 1 https://github.com/xiaorouji/openwrt-passwall-packages && mvdir openwrt-passwall-packages
 git clone --depth 1 https://github.com/fw876/helloworld && mvdir helloworld
-rm -rf shadowsocks-rust
+#rm -rf shadowsocks-rust
 #git clone --depth 1 -b luci https://github.com/xiaorouji/openwrt-passwall passwall1 && mv -n passwall1/luci-app-passwall  ./; rm -rf passwall1
 git clone --depth 1 https://github.com/xiaorouji/openwrt-passwall passwall1 && mv -n passwall1/luci-app-passwall  ./; rm -rf passwall1
 git clone --depth 1 https://github.com/xiaorouji/openwrt-passwall2 passwall2 && mv -n passwall2/luci-app-passwall2 ./;rm -rf passwall2
@@ -32,7 +32,7 @@ rm -rf luci-app-wechatpush
 git clone --depth 1 https://github.com/tty228/luci-app-wechatpush
 git clone --depth 1 https://github.com/esirplayground/luci-app-poweroff
 git clone --depth 1 https://github.com/sirpdboy/luci-app-poweroffdevice
-git clone --depth 1 https://github.com/sirpdboy/luci-app-autotimeset
+git clone --depth 1 https://github.com/sirpdboy/luci-app-taskplan
 git clone --depth 1 https://github.com/sirpdboy/luci-app-lucky lucik && mv -n lucik/luci-app-lucky ./ ; rm -rf lucik
 
 git clone --depth 1 https://github.com/brvphoenix/luci-app-wrtbwmon wrtbwmon1 && mvdir wrtbwmon1
@@ -44,14 +44,14 @@ git clone --depth 1 https://github.com/linkease/istore && mv -n istore/luci/* ./
 git clone --depth 1 https://github.com/linkease/openwrt-app-actions && mv -n openwrt-app-actions/applications/* ./;rm -rf openwrt-app-actions
 git clone --depth 1 https://github.com/Lienol/openwrt-package && mv -n openwrt-package/luci-app-timecontrol ./; rm -rf openwrt-package
 
-git_sparse_clone master "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol \
+git_sparse_clone openwrt-24.10 "https://github.com/immortalwrt/luci" "immluci1" applications/luci-app-timewol \
 applications/luci-app-autoreboot applications/luci-app-ramfree
 #git_sparse_clone master "https://github.com/immortalwrt/packages" "impaks" net/dufs lang/rust
 git_sparse_clone master "https://github.com/coolsnowwolf/packages" "lepaks" net/dufs lang/rust
-git_sparse_clone openwrt-23.05 "https://github.com/coolsnowwolf/luci" "leluci" applications/luci-app-dufs
+git_sparse_clone openwrt-24.10 "https://github.com/coolsnowwolf/luci" "leluci" applications/luci-app-dufs
 
-rm -rf ./*/.git & rm -f ./*/.gitattributes
-rm -rf ./*/.svn & rm -rf ./*/.github & rm -rf ./*/.gitignore
+#rm -rf ./*/.git & rm -f ./*/.gitattributes
+#rm -rf ./*/.svn & rm -rf ./*/.github & rm -rf ./*/.gitignore
 
 sed -i \
 -e 's?include \.\./\.\./\(lang\|devel\)?include $(TOPDIR)/feeds/packages/\1?' \
@@ -60,26 +60,26 @@ sed -i \
 -e 's/ca-certificates/ca-bundle/' \
 */Makefile
 
-sed -i 's/luci-lib-ipkg/luci-base/g' luci-app-store/Makefile
-sed -i "/minisign:minisign/d" luci-app-dnscrypt-proxy2/Makefile
+#sed -i 's/luci-lib-ipkg/luci-base/g' luci-app-store/Makefile
+#sed -i "/minisign:minisign/d" luci-app-dnscrypt-proxy2/Makefile
 #sed -i 's/+dockerd/+dockerd +cgroupfs-mount/' luci-app-docker*/Makefile
 #sed -i '$i /etc/init.d/dockerd restart &' luci-app-docker*/root/etc/uci-defaults/*
-sed -i 's/+libcap /+libcap +libcap-bin /' luci-app-openclash/Makefile
-sed -i 's/\(+luci-compat\)/\1 +luci-theme-argon/' luci-app-argon-config/Makefile
-sed -i 's/\(+luci-compat\)/\1 +luci-theme-design/' luci-app-design-config/Makefile
+#sed -i 's/+libcap /+libcap +libcap-bin /' luci-app-openclash/Makefile
+#sed -i 's/\(+luci-compat\)/\1 +luci-theme-argon/' luci-app-argon-config/Makefile
+#sed -i 's/\(+luci-compat\)/\1 +luci-theme-design/' luci-app-design-config/Makefile
 #sed -i 's/\(+luci-compat\)/\1 +luci-theme-argonne/' luci-app-argonne-config/Makefile
-sed -i 's/ +uhttpd-mod-ubus//' luci-app-packet-capture/Makefile
-sed -i 's/	ip.neighbors/	luci.ip.neighbors/' luci-app-wifidog/luasrc/model/cbi/wifidog/wifidog_cfg.lua
-sed -i -e 's/nas/services/g' -e 's/NAS/Services/g' $(grep -rl 'nas\|NAS' luci-app-fileassistant)
+#sed -i 's/ +uhttpd-mod-ubus//' luci-app-packet-capture/Makefile
+#sed -i 's/	ip.neighbors/	luci.ip.neighbors/' luci-app-wifidog/luasrc/model/cbi/wifidog/wifidog_cfg.lua
+#sed -i -e 's/nas/services/g' -e 's/NAS/Services/g' $(grep -rl 'nas\|NAS' luci-app-fileassistant)
 #find -type f -name Makefile -exec sed -ri  's#mosdns[-_]neo#mosdns#g' {} \;
 
 #rm -rf luci-app-adguardhome/po/zh_Hans
 #cp -Rf luci-app-adguardhome/po/zh-cn luci-app-adguardhome/po/zh_Hans
 
-rm -rf luci-app-passwall2/po/zh_Hans
-cp -Rf luci-app-passwall2/po/zh-cn luci-app-passwall2/po/zh_Hans
-rm -rf luci-app-passwall/po/zh_Hans
-cp -Rf luci-app-passwall/po/zh-cn luci-app-passwall/po/zh_Hans
+#rm -rf luci-app-passwall2/po/zh_Hans
+#cp -Rf luci-app-passwall2/po/zh-cn luci-app-passwall2/po/zh_Hans
+#rm -rf luci-app-passwall/po/zh_Hans
+#cp -Rf luci-app-passwall/po/zh-cn luci-app-passwall/po/zh_Hans
 
 #rm -rf luci-app-wxedge/po/zh_Hans
 #cp -Rf luci-app-wxedge/po/zh-cn luci-app-wxedge/po/zh_Hans
