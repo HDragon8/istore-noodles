@@ -6,16 +6,14 @@ on:
       - '.github/workflows/noodles.yml'
       - '.github/diy/main.sh'
 #  schedule:
-#    - cron: 0 */8 * * *
-#  watch:
-#    types: started
+#    - cron: 0 */4 * * *
   repository_dispatch:
   workflow_dispatch:
     inputs:
-      ssh:
-        description: 'SSH Actions'
+      packages:
+        description: 'packages'
         required: false
-        default: 'false'
+        default: 'false'	
 
 jobs:
   build:
@@ -26,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [main]
+        target: [OP24]
 
     steps:
     - name: Checkout
@@ -36,15 +34,9 @@ jobs:
 
     - name: Initialization environment
       run : |
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global user.name "github-actions[bot]"
+        git config --global user.email "HDragon8@users.noreply.github.com"
+        git config --global user.name "HDragon8"
         sudo timedatectl set-timezone "Asia/Shanghai"
-
-#    - name: Initialization environment
-#      run : |
-#        git config --global user.email "houyonghua2015@gmail.com"
-#        git config --global user.name "HDragon"
-#        sudo timedatectl set-timezone "Asia/Shanghai"
         
     - name: Clone packages
       run: |
@@ -61,7 +53,7 @@ jobs:
 
     - name: Upload
       env: 
-        ACCESS_TOKEN: ${{ secrets.noodles_TOKEN }}
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       run: |
         if [ -e $GITHUB_WORKSPACE/LICENSE ]; then
           cp $GITHUB_WORKSPACE/LICENSE $GITHUB_WORKSPACE/${{matrix.target}}
@@ -69,12 +61,11 @@ jobs:
         if [ -e $GITHUB_WORKSPACE/README.md ]; then
           cp $GITHUB_WORKSPACE/README.md $GITHUB_WORKSPACE/${{matrix.target}}
         fi
-        Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
         cd $GITHUB_WORKSPACE/${{matrix.target}}
         if git status --porcelain | grep .; then
           git add .
-          git commit -am "${Emoji[$[$RANDOM % ${#Emoji[@]}]]} update $(date +%Y-%m-%d" "%H:%M:%S) ${Emoji[$[$RANDOM % ${#Emoji[@]}]]}"
-          git push --quiet "https://${{ secrets.noodles_TOKEN }}@github.com/HDragon8/istore-noodles.git" HEAD:${{matrix.target}}
+          git commit -am "update $(date '+%Y-%m-%d %H:%M:%S')"
+          git push --quiet "https://${{ secrets.ACCESS_TOKEN }}@github.com/HDragon8/istore-noodles.git" HEAD:${{matrix.target}}
         else
           echo "nothing to commit"
           exit 0
